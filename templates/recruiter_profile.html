@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form method="POST">
+        <label>Company Name:</label>
+        <input type="text" name="company_name" required value="{{ recruiter.company_name if recruiter else '' }}">
+        
+        <label>Location:</label>
+        <input type="text" name="location" value="{{ recruiter.location if recruiter else '' }}">
+    
+        <label>Website:</label>
+        <input type="text" name="website" value="{{ recruiter.website if recruiter else '' }}">
+    
+        <button type="submit">Save Profile</button>
+    </form>
+    <a href="{{ url_for('recruiter_dashboard') }}">Back to Dashboard</a>
+    
+    
+</body>
+</html>

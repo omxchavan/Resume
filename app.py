@@ -1,15 +1,80 @@
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import spacy
 import re
 import os
-import fitz  # PyMuPDF for PDF text extraction
+import fitz
+from datetime import datetime
+from config.tech_stack import TECH_STACK_DICT, SKILL_CATEGORIES, get_skill_category, get_related_skills
 
-# Load spaCy NLP model (for general text cleaning)
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your-secret-key'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///jobmatch.db'
+app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+
+db = SQLAlchemy(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+
+# Load spaCy model
 nlp = spacy.load("en_core_web_sm")
 
+# Database Models
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
+    user_type = db.Column(db.String(20), nullable=False)  # 'candidate' or 'recruiter'
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class CandidateProfile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    full_name = db.Column(db.String(100))
+    resume_path = db.Column(db.String(200))
+    skills = db.Column(db.Text)
+    experience = db.Column(db.Integer)
+    education = db.Column(db.Text)
+    github_url = db.Column(db.String(200))
+    linkedin_url = db.Column(db.String(200))
+    extracted_keywords = db.Column(db.Text)
+
+class RecruiterProfile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    company_name = db.Column(db.String(100))
+    industry = db.Column(db.String(100))
+    company_size = db.Column(db.String(50))
+
+class JobPosting(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    recruiter_id = db.Column(db.Integer, db.ForeignKey('recruiter_profile.id'), nullable=False)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    required_skills = db.Column(db.Text, nullable=False)
+    experience_required = db.Column(db.Integer)
+    location = db.Column(db.String(100))
+    salary_range = db.Column(db.String(100))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(20), default='active')
+
+class Application(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    job_id = db.Column(db.Integer, db.ForeignKey('job_posting.id'), nullable=False)
+    candidate_id = db.Column(db.Integer, db.ForeignKey('candidate_profile.id'), nullable=False)
+    status = db.Column(db.String(20), default='pending')
+    match_score = db.Column(db.Float)
+    applied_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+# Helper functions from the original script (cleaned_up and modified)
 def clean_text(text):
     """Clean the extracted text by removing non-ASCII characters and normalizing whitespace."""
-    text = re.sub(r'[^\x00-\x7F]+', ' ', text)  # Remove non-ASCII characters
-    text = re.sub(r'\s+', ' ', text).strip()  # Normalize whitespace
+    text = re.sub(r'[^\x00-\x7F]+', ' ', text)
+    text = re.sub(r'\s+', ' ', text).strip()
     return text
 
 def extract_text_from_pdf(pdf_path):
@@ -23,203 +88,298 @@ def extract_text_from_pdf(pdf_path):
         print(f"Error reading PDF: {e}")
     return clean_text(text)
 
+# Routes
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        user_type = request.form['user_type']
+        
+        if User.query.filter_by(email=email).first():
+            flash('Email already registered')
+            return redirect(url_for('register'))
+        
+        user = User(
+            email=email,
+            password_hash=generate_password_hash(password),
+            user_type=user_type
+        )
+        db.session.add(user)
+        db.session.commit()
+        
+        return redirect(url_for('login'))
+    
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        user = User.query.filter_by(email=email).first()
+        
+        if user and check_password_hash(user.password_hash, password):
+            login_user(user)
+            return redirect(url_for('dashboard'))
+        
+        flash('Invalid email or password')
+    return render_template('login.html')
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    if current_user.user_type == 'candidate':
+        return render_template('candidate_dashboard.html')
+    else:
+        return render_template('recruiter_dashboard.html')
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    if current_user.user_type == 'candidate':
+        profile = CandidateProfile.query.filter_by(user_id=current_user.id).first()
+        if request.method == 'POST':
+            # Handle candidate profile update
+            pass
+        return render_template('candidate_profile.html', profile=profile)
+    else:
+        profile = RecruiterProfile.query.filter_by(user_id=current_user.id).first()
+        if request.method == 'POST':
+            # Handle recruiter profile update
+            pass
+        return render_template('recruiter_profile.html', profile=profile)
+
+@app.route('/post-job', methods=['GET', 'POST'])
+@login_required
+def post_job():
+    if current_user.user_type != 'recruiter':
+        return redirect(url_for('dashboard'))
+    
+    if request.method == 'POST':
+        job = JobPosting(
+            recruiter_id=current_user.id,
+            title=request.form['title'],
+            description=request.form['description'],
+            required_skills=request.form['required_skills'],
+            experience_required=int(request.form['experience_required']),
+            location=request.form['location'],
+            salary_range=request.form['salary_range']
+        )
+        db.session.add(job)
+        db.session.commit()
+        flash('Job posted successfully')
+        return redirect(url_for('dashboard'))
+    
+    return render_template('post_job.html')
+
+@app.route('/search-jobs')
+@login_required
+def search_jobs():
+    if current_user.user_type != 'candidate':
+        return redirect(url_for('dashboard'))
+    
+    jobs = JobPosting.query.filter_by(status='active').all()
+    return render_template('search_jobs.html', jobs=jobs)
+
+@app.route('/apply/<int:job_id>', methods=['POST'])
+@login_required
+def apply_job(job_id):
+    if current_user.user_type != 'candidate':
+        return redirect(url_for('dashboard'))
+    
+    candidate_profile = CandidateProfile.query.filter_by(user_id=current_user.id).first()
+    job = JobPosting.query.get_or_404(job_id)
+    
+    # Calculate match score
+    match_score = calculate_match_score(candidate_profile, job)
+    
+    application = Application(
+        job_id=job_id,
+        candidate_id=candidate_profile.id,
+        match_score=match_score
+    )
+    db.session.add(application)
+    db.session.commit()
+    
+    flash('Application submitted successfully')
+    return redirect(url_for('search_jobs'))
+
+def calculate_match_score(candidate_profile, job_posting, tech_stack_dict):
+    """
+    Calculate a comprehensive match score between a candidate and job posting.
+    Uses multiple data sources: profile data, resume text, and keyword matching.
+    Returns a score between 0 and 100, with detailed breakdown.
+    """
+    # Initialize score components
+    skill_match_score = 0
+    experience_match_score = 0
+    keyword_match_score = 0
+    education_match_score = 0
+    
+    # Get required skills from job posting
+    required_skills = set(skill.strip().lower() for skill in job_posting.required_skills.split(','))
+    
+    # Get candidate skills from profile
+    candidate_skills = set(skill.strip().lower() for skill in candidate_profile.skills.split(','))
+    
+    # Extract keywords from resume if available
+    resume_keywords = set()
+    if candidate_profile.resume_path:
+        try:
+            resume_text = extract_text_from_pdf(candidate_profile.resume_path)
+            resume_keywords = extract_keywords_from_resume(resume_text, tech_stack_dict)
+        except Exception as e:
+            print(f"Error processing resume: {e}")
+    
+    # Combine profile skills and resume keywords
+    all_candidate_skills = candidate_skills.union(resume_keywords)
+    
+    # Calculate skill match score (40% of total)
+    if required_skills:
+        matched_skills = required_skills.intersection(all_candidate_skills)
+        skill_match_score = (len(matched_skills) / len(required_skills)) * 40
+    
+    # Calculate experience match score (25% of total)
+    if job_posting.experience_required:
+        experience_ratio = min(candidate_profile.experience / job_posting.experience_required, 1.5)
+        experience_match_score = min(experience_ratio * 25, 25)
+    
+    # Calculate keyword match using tech stack dictionary (20% of total)
+    job_description_keywords = extract_keywords_from_text(job_posting.description, tech_stack_dict)
+    if job_description_keywords:
+        matched_keywords = job_description_keywords.intersection(all_candidate_skills)
+        keyword_match_score = (len(matched_keywords) / len(job_description_keywords)) * 20
+    
+    # Calculate education match score (15% of total)
+    education_match_score = calculate_education_match(
+        candidate_profile.education,
+        job_posting.description
+    )
+    
+    # Calculate total score
+    total_score = (
+        skill_match_score +
+        experience_match_score +
+        keyword_match_score +
+        education_match_score
+    )
+    
+    # Round to 2 decimal places
+    total_score = round(total_score, 2)
+    
+    # Prepare detailed breakdown
+    score_breakdown = {
+        'total_score': total_score,
+        'skill_match': {
+            'score': skill_match_score,
+            'matched_skills': list(required_skills.intersection(all_candidate_skills)),
+            'missing_skills': list(required_skills - all_candidate_skills)
+        },
+        'experience_match': {
+            'score': experience_match_score,
+            'candidate_experience': candidate_profile.experience,
+            'required_experience': job_posting.experience_required
+        },
+        'keyword_match': {
+            'score': keyword_match_score,
+            'matched_keywords': list(matched_keywords),
+            'total_keywords': len(job_description_keywords)
+        },
+        'education_match': {
+            'score': education_match_score
+        }
+    }
+    
+    return total_score, score_breakdown
+
 def extract_keywords_from_resume(text, tech_stack_dict):
-    """Extract keywords from the resume based on the tech stack dictionary."""
-    extracted_keywords = set()
+    """
+    Extract technical keywords from resume text using the tech stack dictionary.
+    Includes fuzzy matching and context analysis.
+    """
+    keywords = set()
     text = text.lower()
     
-    # Check for the tech stack terms in the resume text
+    # Process text with spaCy for better context understanding
+    doc = nlp(text)
+    
+    # Extract sentences containing technical terms for context
+    tech_sentences = []
+    for sent in doc.sents:
+        sent_text = sent.text.lower()
+        if any(term.lower() in sent_text for terms in tech_stack_dict.values() for term in terms):
+            tech_sentences.append(sent_text)
+    
+    # Check for tech stack terms in the context of technical sentences
     for tech, terms in tech_stack_dict.items():
         for term in terms:
+            term = term.lower()
+            # Check in whole text
             if term in text:
-                extracted_keywords.add(tech)  # Add the tech stack term as a keyword
-    return extracted_keywords
+                keywords.add(tech)
+            # Check in technical sentences for better context
+            for sent in tech_sentences:
+                if term in sent:
+                    keywords.add(tech)
+    
+    return keywords
 
-def search_terms_in_text(text, terms):
-    """Search for terms in the given text (recruiter skills)."""
+def extract_keywords_from_text(text, tech_stack_dict):
+    """Extract keywords from any text using the tech stack dictionary."""
+    keywords = set()
     text = text.lower()
-    found_terms = [term for term in terms if term.lower() in text]
-    return found_terms
-
-def calculate_score(found_terms, total_terms):
-    """Calculate a score based on the matched recruiter skills."""
-    matched_count = len(found_terms)
-    score = (matched_count / len(total_terms)) * 100 if len(total_terms) > 0 else 0
-    return round(score, 2)
-
-# Set the path to the uploads folder
-uploads_folder = "uploads"
-
-# Define a dictionary of technology stacks (with variations) to extract keywords from the resume
-tech_stack_dict = {
-    # Frontend Technologies
-    'React': ['react', 'reactjs', 'react.js', 'reactjs.js'],
-    'Angular': ['angular', 'angularjs', 'angular.js', 'ng'],
-    'Vue': ['vue', 'vuejs', 'vue.js'],
-    'Svelte': ['svelte', 'sveltejs', 'svelte.js'],
-    'Bootstrap': ['bootstrap', 'bootstrap4', 'bootstrap5', 'bootstrap3'],
-    'Tailwind': ['tailwind', 'tailwindcss', 'tailwind.css'],
     
-    # JavaScript Frameworks and Libraries
-    'Node.js': ['node', 'nodejs', 'node.js'],
-    'Express': ['express'],
-    'jQuery': ['jquery', 'jquery.js'],
-    'Ember.js': ['ember', 'emberjs', 'ember.js'],
-    'Backbone.js': ['backbone', 'backbonejs', 'backbone.js'],
-    'Knockout.js': ['knockout', 'knockoutjs', 'knockout.js'],
+    for tech, terms in tech_stack_dict.items():
+        if any(term.lower() in text for term in terms):
+            keywords.add(tech)
     
-    # CSS Preprocessors and Tools
-    'Sass': ['sass', 'scss'],
-    'Less': ['less'],
-    'PostCSS': ['postcss'],
-    'CSS3': ['css3', 'css3.0'],
-    'CSS': ['css', 'css2', 'css3'],
+    return keywords
+
+def calculate_education_match(candidate_education, job_description):
+    """
+    Calculate education match score based on requirements in job description
+    and candidate's education.
+    """
+    education_score = 0
+    education_levels = {
+        'phd': 5,
+        'master': 4,
+        'bachelor': 3,
+        'associate': 2,
+        'high school': 1
+    }
     
-    # HTML/CSS/JS Compilers and Bundlers
-    'Webpack': ['webpack'],
-    'Babel': ['babel'],
-    'Parcel': ['parcel'],
-    'Rollup': ['rollup'],
+    # Convert education text to lowercase for matching
+    candidate_education = candidate_education.lower()
+    job_description = job_description.lower()
     
-    # Backend Technologies
-    'Python': ['python', 'py'],
-    'Django': ['django', 'django1', 'django2'],
-    'Flask': ['flask', 'flask.py'],
-    'FastAPI': ['fastapi'],
-    'Ruby': ['ruby', 'rubyonrails', 'rails'],
-    'PHP': ['php', 'php7', 'php8'],
-    'Java': ['java', 'jdk', 'jre'],
-    'Spring': ['spring', 'springboot', 'spring-framework'],
-    'Node.js': ['node', 'nodejs', 'node.js'],
-    'C#': ['csharp', 'c#'],
-    'ASP.NET': ['asp.net', 'aspnet'],
+    # Find highest education level mentioned in job description
+    required_level = 0
+    for level, score in education_levels.items():
+        if level in job_description:
+            required_level = max(required_level, score)
     
-    # Databases
-    'MySQL': ['mysql', 'mysql5', 'mysql8'],
-    'PostgreSQL': ['postgresql', 'postgres'],
-    'MongoDB': ['mongodb', 'mongo', 'mongod'],
-    'SQLite': ['sqlite'],
-    'Redis': ['redis'],
-    'Cassandra': ['cassandra'],
-    'MariaDB': ['mariadb'],
-    'Oracle DB': ['oracle', 'oracle db', 'oracle database'],
+    # Find candidate's highest education level
+    candidate_level = 0
+    for level, score in education_levels.items():
+        if level in candidate_education:
+            candidate_level = max(candidate_level, score)
     
-    # Cloud and DevOps
-    'AWS': ['aws', 'amazon web services', 'amazon cloud'],
-    'Azure': ['azure', 'microsoft azure'],
-    'Google Cloud': ['google cloud', 'gcp'],
-    'Docker': ['docker'],
-    'Kubernetes': ['kubernetes', 'k8s'],
-    'Jenkins': ['jenkins'],
-    'Terraform': ['terraform'],
-    'CI/CD': ['ci/cd', 'continuous integration', 'continuous delivery'],
-    'Ansible': ['ansible'],
-    'Chef': ['chef'],
-    'Puppet': ['puppet'],
+    # Calculate education score
+    if required_level == 0 or candidate_level >= required_level:
+        education_score = 15  # Full score if no specific requirement or exceeds requirement
+    else:
+        # Partial score based on how close candidate is to required level
+        education_score = (candidate_level / required_level) * 15
     
-    # Mobile Development
-    'React Native': ['react native', 'reactnative', 'react-native'],
-    'Flutter': ['flutter'],
-    'Swift': ['swift'],
-    'Kotlin': ['kotlin'],
-    'Xamarin': ['xamarin'],
-    
-    # Data Science and Machine Learning
-    'TensorFlow': ['tensorflow', 'tf'],
-    'PyTorch': ['pytorch', 'torch'],
-    'Scikit-learn': ['scikit-learn', 'sklearn'],
-    'Pandas': ['pandas'],
-    'NumPy': ['numpy'],
-    'Matplotlib': ['matplotlib'],
-    'Keras': ['keras'],
-    'OpenCV': ['opencv'],
-    'SciPy': ['scipy'],
-    'NLTK': ['nltk'],
-    'SpaCy': ['spacy'],
-    
-    # Testing Frameworks
-    'Jest': ['jest'],
-    'Mocha': ['mocha'],
-    'Chai': ['chai'],
-    'JUnit': ['junit'],
-    'Selenium': ['selenium'],
-    'Cypress': ['cypress'],
-    
-    # Version Control
-    'Git': ['git'],
-    'GitHub': ['github'],
-    'GitLab': ['gitlab'],
-    'Bitbucket': ['bitbucket'],
-    
-    # Miscellaneous Technologies
-    'GraphQL': ['graphql'],
-    'REST': ['rest', 'restful'],
-    'WebSocket': ['websocket'],
-    'gRPC': ['grpc'],
-    'Socket.io': ['socket.io', 'socketio'],
-    'OAuth': ['oauth', 'oauth2'],
-    'JWT': ['jwt'],
-    
-    # UI/UX Tools
-    'Figma': ['figma'],
-    'Adobe XD': ['adobe xd', 'xd'],
-    'Sketch': ['sketch'],
-    'InVision': ['invision'],
-    
-    # NoSQL Databases
-    'Firebase': ['firebase'],
-    'CouchDB': ['couchdb'],
-    'DynamoDB': ['dynamodb'],
-    
-    # Big Data and Analytics
-    'Hadoop': ['hadoop'],
-    'Spark': ['spark'],
-    'Kafka': ['kafka'],
-    'Elasticsearch': ['elasticsearch'],
-    'Solr': ['solr'],
-}
+    return round(education_score, 2)
 
-
-
-# List available resumes in the uploads folder
-resume_files = [f for f in os.listdir(uploads_folder) if f.endswith(".pdf")]
-
-if not resume_files:
-    print("No PDF resume files found in the 'uploads' folder.")
-else:
-    # Get skills input from the recruiter (comma-separated)
-    skills_input = input("Enter required skills (comma-separated): ")
-    recruiter_skills = [skill.strip() for skill in skills_input.split(",")]
-
-    resume_scores = []
-
-    # Process each resume
-    for file in resume_files:
-        file_path = os.path.join(uploads_folder, file)
-
-        # Extract text from the PDF
-        resume_text = extract_text_from_pdf(file_path)
-
-        if resume_text.strip():
-            # Extract keywords from the resume using the tech stack dictionary
-            extracted_keywords = extract_keywords_from_resume(resume_text, tech_stack_dict)
-
-            # Search for recruiter skills in the extracted keywords
-            matched_terms = search_terms_in_text(" ".join(extracted_keywords), recruiter_skills)
-
-            # Calculate the score for the resume based on the matched recruiter skills
-            score = calculate_score(matched_terms, recruiter_skills)
-
-            resume_scores.append((file, score, extracted_keywords, matched_terms))
-
-    # Sort the resumes by score in descending order
-    resume_scores.sort(key=lambda x: x[1], reverse=True)
-
-    # Display the rankings
-    print("\nResume Rankings:")
-    for idx, (file, score, extracted_keywords, matched_terms) in enumerate(resume_scores, start=1):
-        print(f"{idx}. {file}")
-        print(f"   Matching Score: {score}%")
-        print(f"   Extracted Keywords: {extracted_keywords}")
-        print(f"   Matched Recruiter Skills: {matched_terms}")
-        print("=" * 50)
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)

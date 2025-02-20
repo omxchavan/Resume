@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidate Dashboard</title>
+</head>
+<body>
+    <h1>Candidate Dashboard</h1>
+    <h2>Job Openings</h2>
+<ul>
+    {% for job in jobs %}
+    <li>
+        <strong>{{ job.title }}</strong> at <em>{{ job.recruiter.recruiter_profile.company_name }}</em><br>
+        {{ job.description }}<br>
+        <em>Skills Required: {{ job.skills_required }}</em><br>
+        <a href="{{ url_for('apply_job', job_id=job.id) }}">Apply</a>
+    </li>
+    {% endfor %}
+</ul>
+
+    <a href="{{ url_for('candidate_profile') }}">Manage Profile</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
+</body>
+</html>
