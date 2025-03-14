@@ -239,6 +239,7 @@ else:
     # Display the rankings
     print("\nResume Rankings:")
     for idx, (file, score, extracted_keywords, matched_terms, social_links) in enumerate(resume_scores, start=1):
+        print(resume_text)
         print(f"{idx}. {file}")
         print(f"   Matching Score: {score}%")
         print(f"   Extracted Keywords: {extracted_keywords}")

@@ -1,0 +1,98 @@
+{% extends "base.html" %} {% block title %}Post New Job - Resume Platform{%
+endblock %} {% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Post New Job</h5>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          <div class="mb-3">
+            <label for="title" class="form-label">Job Title</label>
+            <input
+              type="text"
+              class="form-control"
+              id="title"
+              name="title"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="company" class="form-label">Company Name</label>
+            <input
+              type="text"
+              class="form-control"
+              id="company"
+              name="company"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="description" class="form-label">Job Description</label>
+            <textarea
+              class="form-control"
+              id="description"
+              name="description"
+              rows="5"
+              required
+            ></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label for="required_skills" class="form-label"
+              >Required Skills (comma-separated)</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="required_skills"
+              name="required_skills"
+              placeholder="e.g., Python, JavaScript, React, SQL"
+              required
+            />
+            <div class="form-text">
+              Enter skills separated by commas. These will be used to match with
+              candidate resumes.
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="location" class="form-label">Location</label>
+            <input
+              type="text"
+              class="form-control"
+              id="location"
+              name="location"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="salary_range" class="form-label">Salary Range</label>
+            <input
+              type="text"
+              class="form-control"
+              id="salary_range"
+              name="salary_range"
+              placeholder="e.g., $50,000 - $80,000"
+              required
+            />
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary">Post Job</button>
+            <a
+              href="{{ url_for('recruiter.dashboard') }}"
+              class="btn btn-outline-secondary"
+              >Cancel</a
+            >
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

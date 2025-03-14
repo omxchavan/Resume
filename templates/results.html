@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3>Resume Rankings</h3>
+            <div>
+                <a href="{{ url_for('index') }}" class="btn btn-primary me-2">Back to Home</a>
+                <a href="{{ url_for('clear_uploads') }}" class="btn btn-danger" 
+                   onclick="return confirm('Are you sure you want to delete all uploaded resumes?');">Clear All Resumes</a>
+            </div>
+        </div>
+        <p>Rankings for skills: 
+            {% for skill in skills %}
+                <span class="badge bg-info text-dark">{{ skill }}</span>
+            {% endfor %}
+        </p>
+    </div>
+</div>
+
+{% if results|length == 0 %}
+<div class="alert alert-warning">
+    No resumes found in the system. Please upload some PDF resumes first.
+</div>
+{% else %}
+<div class="row">
+    {% for result in results %}
+    <div class="col-md-6">
+        <div class="card resume-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ result.filename }}</h5>
+                <span class="badge {% if result.score >= 75 %}bg-success{% elif result.score >= 50 %}bg-warning{% else %}bg-danger{% endif %}">
+                    {{ result.score }}% Match
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6>Match Score:</h6>
+                    <div class="progress">
+                        <div class="progress-bar {% if result.score >= 75 %}bg-success{% elif result.score >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             role="progressbar" style="width: {{ result.score }}%" 
+                             aria-valuenow="{{ result.score }}" aria-valuemin="0" aria-valuemax="100">
+                            {{ result.score }}%
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Matched Skills ({{ result.matched_skills|length }}/{{ skills|length }}):</h6>
+                    {% if result.matched_skills|length > 0 %}
+                        {% for skill in result.matched_skills %}
+                            <span class="badge bg-success skill-badge">{{ skill }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No matching skills found</p>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Missing Skills:</h6>
+                    {% set missing_skills = skills|reject('in', result.matched_skills)|list %}
+                    {% if missing_skills|length > 0 %}
+                        {% for skill in missing_skills %}
+                            <span class="badge bg-secondary skill-badge">{{ skill }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">All required skills found!</p>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <h6>All Detected Skills:</h6>
+                    <div class="keyword-container">
+                        {% if result.keywords|length > 0 %}
+                            {% for keyword in result.keywords %}
+                                <span class="badge bg-info text-dark skill-badge">{{ keyword }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">No skills detected</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div>
+                    <h6>Social Links:</h6>
+                    <div class="social-links">
+                        {% for platform, links in result.social_links.items() %}
+                            {% if links|length > 0 %}
+                                <strong>{{ platform }}:</strong>
+                                {% for link in links %}
+                                    <a href="{{ link }}" target="_blank" class="text-truncate">{{ link }}</a>
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if result.social_links.GitHub|length == 0 and 
+                              result.social_links.LinkedIn|length == 0 and 
+                              result.social_links.Twitter|length == 0 %}
+                            <p class="text-muted">No social links found</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
