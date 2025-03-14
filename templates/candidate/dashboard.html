@@ -1,89 +1,252 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block title %}Candidate Dashboard - Resume
+Platform{% endblock %} {% block content %}
+<div class="container py-5">
+  <div class="row g-4">
+    <!-- Welcome Section -->
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 class="mb-1">
+            <i class="bi bi-person-circle me-2"></i>Welcome back, {{
+            current_user.name }}
+          </h2>
+          <p class="text-muted mb-0">
+            Here's an overview of your job search progress
+          </p>
+        </div>
+        <a href="{{ url_for('candidate.view_jobs') }}" class="btn btn-primary">
+          <i class="bi bi-briefcase me-2"></i>Browse Jobs
+        </a>
+      </div>
+    </div>
 
-{% block title %}Candidate Dashboard - Resume Platform{% endblock %}
-
-{% block content %}
-<div class="row">
+    <!-- Resume Card -->
     <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Your Resume</h5>
-            </div>
-            <div class="card-body">
-                {% if resume %}
-                    <div class="mb-3">
-                        <h6>Uploaded Resume</h6>
-                        <p class="text-muted">Last updated: {{ resume.updated_at.strftime('%Y-%m-%d') }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <h6>Skills Detected</h6>
-                        <div class="d-flex flex-wrap gap-2">
-                            {% for skill in resume.skills %}
-                                <span class="badge bg-primary">{{ skill }}</span>
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% else %}
-                    <p class="text-muted">No resume uploaded yet.</p>
-                {% endif %}
-                
-                <form action="{{ url_for('candidate.upload_resume') }}" method="POST" enctype="multipart/form-data">
-                    <div class="mb-3">
-                        <label for="resume" class="form-label">Upload/Update Resume</label>
-                        <input type="file" class="form-control" id="resume" name="resume" accept=".pdf" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Upload Resume</button>
-                </form>
-            </div>
+      <div class="card h-100">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-file-earmark-text me-2"></i>
+            <h5 class="mb-0">Your Resume</h5>
+          </div>
         </div>
+        <div class="card-body">
+          {% if resume %}
+          <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="mb-0">Uploaded Resume</h6>
+              <span class="badge bg-success">Active</span>
+            </div>
+            <p class="text-muted small mb-0">
+              <i class="bi bi-clock me-1"></i>Last updated: {{
+              resume.updated_at.strftime('%Y-%m-%d') }}
+            </p>
+          </div>
+          <div class="mb-4">
+            <h6 class="mb-3">
+              <i class="bi bi-tools me-2"></i>Skills Detected
+            </h6>
+            <div class="d-flex flex-wrap gap-2">
+              {% for skill in resume.skills %}
+              <span class="badge bg-light text-dark">{{ skill }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% else %}
+          <div class="text-center py-4">
+            <i class="bi bi-file-earmark-text display-4 text-muted mb-3"></i>
+            <p class="text-muted mb-4">No resume uploaded yet.</p>
+          </div>
+          {% endif %}
+
+          <form
+            action="{{ url_for('candidate.upload_resume') }}"
+            method="POST"
+            enctype="multipart/form-data"
+            class="mt-4"
+          >
+            <div class="mb-3">
+              <label for="resume" class="form-label">
+                <i class="bi bi-upload me-2"></i>Upload/Update Resume
+              </label>
+              <input
+                type="file"
+                class="form-control"
+                id="resume"
+                name="resume"
+                accept=".pdf"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="bi bi-cloud-upload me-2"></i>Upload Resume
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
-    
+
+    <!-- Applications Card -->
     <div class="col-md-8">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Your Applications</h5>
-                <a href="{{ url_for('candidate.view_jobs') }}" class="btn btn-primary btn-sm">Browse Jobs</a>
+      <div class="card h-100">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-briefcase-check me-2"></i>
+              <h5 class="mb-0">Your Applications</h5>
             </div>
-            <div class="card-body">
-                {% if applications %}
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Job Title</th>
-                                    <th>Company</th>
-                                    <th>Applied Date</th>
-                                    <th>Match Score</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for application in applications %}
-                                    <tr>
-                                        <td>{{ application.job_posting.title }}</td>
-                                        <td>{{ application.job_posting.company }}</td>
-                                        <td>{{ application.applied_at.strftime('%Y-%m-%d') }}</td>
-                                        <td>
-                                            <span class="badge bg-{{ 'success' if application.match_score >= 70 else 'warning' if application.match_score >= 40 else 'danger' }}">
-                                                {{ "%.1f"|format(application.match_score) }}%
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-{{ 'success' if application.status == 'accepted' else 'warning' if application.status == 'reviewed' else 'info' if application.status == 'pending' else 'danger' }}">
-                                                {{ application.status|title }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <p class="text-muted">You haven't applied to any jobs yet.</p>
-                    <a href="{{ url_for('candidate.view_jobs') }}" class="btn btn-primary">Browse Available Jobs</a>
-                {% endif %}
+            <div class="btn-group">
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm active"
+              >
+                All
+              </button>
+              <button type="button" class="btn btn-outline-primary btn-sm">
+                Pending
+              </button>
+              <button type="button" class="btn btn-outline-primary btn-sm">
+                Reviewed
+              </button>
+              <button type="button" class="btn btn-outline-primary btn-sm">
+                Accepted
+              </button>
             </div>
+          </div>
         </div>
+        <div class="card-body">
+          {% if applications %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Job Title</th>
+                  <th>Company</th>
+                  <th>Applied Date</th>
+                  <th>Match Score</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for application in applications %}
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-briefcase me-2 text-primary"></i>
+                      {{ application.job_posting.title }}
+                    </div>
+                  </td>
+                  <td>{{ application.job_posting.company }}</td>
+                  <td>
+                    <span class="text-muted">
+                      {{ application.applied_at.strftime('%Y-%m-%d') }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div
+                        class="progress me-2"
+                        style="width: 60px; height: 6px"
+                      >
+                        <div
+                          class="progress-bar bg-{{ 'success' if application.match_score >= 70 else 'warning' if application.match_score >= 40 else 'danger' }}"
+                          role="progressbar"
+                          style="width: {{ application.match_score }}%"
+                        ></div>
+                      </div>
+                      <span
+                        class="badge bg-{{ 'success' if application.match_score >= 70 else 'warning' if application.match_score >= 40 else 'danger' }}"
+                      >
+                        {{ "%.1f"|format(application.match_score) }}%
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      class="badge bg-{{ 'success' if application.status == 'accepted' else 'warning' if application.status == 'reviewed' else 'info' if application.status == 'pending' else 'danger' }}"
+                    >
+                      {{ application.status|title }}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-5">
+            <i class="bi bi-briefcase-x display-1 text-muted mb-3"></i>
+            <h3 class="text-muted">No applications yet</h3>
+            <p class="text-muted mb-4">
+              Start applying to jobs to track your applications here!
+            </p>
+            <a
+              href="{{ url_for('candidate.view_jobs') }}"
+              class="btn btn-primary"
+            >
+              <i class="bi bi-briefcase me-2"></i>Browse Available Jobs
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
     </div>
+  </div>
 </div>
-{% endblock %} 
+
+<style>
+  .card {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .table > :not(caption) > * > * {
+    padding: 1rem;
+    vertical-align: middle;
+  }
+
+  .progress {
+    background-color: var(--light-bg);
+    border-radius: 1rem;
+  }
+
+  .progress-bar {
+    border-radius: 1rem;
+  }
+
+  .badge {
+    padding: 0.5em 1em;
+    font-weight: 500;
+  }
+
+  .btn-group .btn {
+    padding: 0.5rem 1rem;
+  }
+
+  .form-control {
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .btn {
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.5rem;
+  }
+</style>
+
+<script>
+  document.querySelectorAll(".btn-group .btn").forEach((button) => {
+    button.addEventListener("click", function () {
+      document
+        .querySelectorAll(".btn-group .btn")
+        .forEach((btn) => btn.classList.remove("active"));
+      this.classList.add("active");
+    });
+  });
+</script>
+{% endblock %}

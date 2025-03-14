@@ -185,14 +185,18 @@ def extract_keywords_from_resume(text, tech_stack_dict):
     # Check for the tech stack terms in the resume text
     for tech, terms in tech_stack_dict.items():
         for term in terms:
-            if term.lower() in text:
+            if term.lower() in text:  # Convert term to lowercase for case-insensitive matching
                 extracted_keywords.add(tech)  # Add the tech stack term as a keyword
     return extracted_keywords
 
 def search_terms_in_text(text, terms):
-    """Search for terms in the given text (recruiter skills)."""
-    text = text.lower()
-    found_terms = [term for term in terms if term.lower() in text]
+    """Search for terms in the given text (recruiter skills).
+    Both text and terms are converted to lowercase for case-insensitive matching."""
+    found_terms = []
+    text = text.lower()  # Convert text to lowercase for case-insensitive matching
+    for term in terms:
+        if term.lower() in text:  # Convert term to lowercase for comparison
+            found_terms.append(term)
     return found_terms
 
 def calculate_score(found_terms, total_terms):

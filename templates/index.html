@@ -1,65 +1,163 @@
 {% extends 'base.html' %} {% block content %}
 <!-- Hero Section -->
-<div class="hero-section bg-primary text-white py-5">
-  <div class="container">
-    <div class="row align-items-center">
-      <div class="col-md-6">
-        <h1 class="display-4 fw-bold mb-4">Smart Resume Ranking Platform</h1>
-        <p class="lead mb-4">
-          Transform your hiring process with AI-powered resume analysis and
-          intelligent candidate ranking.
+<div class="hero-section position-relative overflow-hidden">
+  <div class="container position-relative z-1">
+    <div class="row align-items-center min-vh-75">
+      <div class="col-lg-6">
+        <h1 class="display-3 fw-bold mb-4 text-white">
+          Revolutionize Your Hiring Process
+        </h1>
+        <p class="lead mb-4 text-white-50">
+          Experience the future of resume screening with our AI-powered
+          platform. Analyze, rank, and find the perfect candidates in minutes,
+          not hours.
         </p>
-        <a href="#features" class="btn btn-light btn-lg">Get Started</a>
+        <div class="d-flex gap-3">
+          <a
+            href="{{ url_for('auth.register') }}"
+            class="btn btn-light btn-lg px-4 py-3"
+          >
+            <i class="bi bi-upload me-2"></i>Get Started
+          </a>
+          <a href="#features" class="btn btn-outline-light btn-lg px-4 py-3">
+            <i class="bi bi-info-circle me-2"></i>Learn More
+          </a>
+        </div>
       </div>
-      <div class="col-md-6">
-        <img
-          src="https://via.placeholder.com/600x400"
-          alt="Platform Preview"
-          class="img-fluid rounded shadow"
-        />
+      <div class="col-lg-6">
+        <div class="hero-image-wrapper">
+          <img
+            src="https://via.placeholder.com/600x400"
+            alt="Platform Preview"
+            class="img-fluid rounded-4 shadow-lg"
+          />
+          <div class="floating-card card-1">
+            <i class="bi bi-graph-up text-primary"></i>
+            <span>80% Faster Screening</span>
+          </div>
+          <div class="floating-card card-2">
+            <i class="bi bi-check-circle text-success"></i>
+            <span>95% Accuracy</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-shape"></div>
+</div>
+
+<!-- Stats Section -->
+<div class="stats-section py-5">
+  <div class="container">
+    <div class="row g-4 text-center">
+      <div class="col-md-3">
+        <div class="stat-card">
+          <h2 class="display-4 fw-bold text-primary">10K+</h2>
+          <p class="text-muted">Resumes Analyzed</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card">
+          <h2 class="display-4 fw-bold text-primary">500+</h2>
+          <p class="text-muted">Companies Trust Us</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card">
+          <h2 class="display-4 fw-bold text-primary">95%</h2>
+          <p class="text-muted">Accuracy Rate</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card">
+          <h2 class="display-4 fw-bold text-primary">80%</h2>
+          <p class="text-muted">Time Saved</p>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Features Section -->
-<div id="features" class="py-5">
+<div id="features" class="py-5 bg-light">
   <div class="container">
-    <h2 class="text-center mb-5">Why Choose Our Platform?</h2>
+    <div class="text-center mb-5">
+      <h2 class="display-5 fw-bold mb-3">Why Choose Our Platform?</h2>
+      <p class="lead text-muted">
+        Experience the power of AI-driven resume analysis
+      </p>
+    </div>
     <div class="row g-4">
       <div class="col-md-4">
-        <div class="card h-100 border-0 shadow-sm">
-          <div class="card-body text-center">
-            <i class="fas fa-robot fa-3x text-primary mb-3"></i>
-            <h3 class="card-title h4">AI-Powered Analysis</h3>
-            <p class="card-text">
-              Advanced algorithms analyze resumes to identify key skills and
-              qualifications.
-            </p>
+        <div class="feature-card">
+          <div class="icon-wrapper bg-primary bg-opacity-10">
+            <i class="bi bi-robot text-primary"></i>
           </div>
+          <h3 class="h4 mt-4">AI-Powered Analysis</h3>
+          <p class="text-muted">
+            Advanced machine learning algorithms analyze resumes to identify key
+            skills, experience, and qualifications with high accuracy.
+          </p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="card h-100 border-0 shadow-sm">
-          <div class="card-body text-center">
-            <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
-            <h3 class="card-title h4">Smart Ranking</h3>
-            <p class="card-text">
-              Automatically rank candidates based on required skills and
-              experience.
-            </p>
+        <div class="feature-card">
+          <div class="icon-wrapper bg-success bg-opacity-10">
+            <i class="bi bi-graph-up text-success"></i>
           </div>
+          <h3 class="h4 mt-4">Smart Ranking</h3>
+          <p class="text-muted">
+            Automatically rank candidates based on required skills, experience,
+            and qualifications using our sophisticated scoring system.
+          </p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="card h-100 border-0 shadow-sm">
-          <div class="card-body text-center">
-            <i class="fas fa-clock fa-3x text-primary mb-3"></i>
-            <h3 class="card-title h4">Time-Saving</h3>
-            <p class="card-text">
-              Reduce manual screening time by up to 80% with automated analysis.
-            </p>
+        <div class="feature-card">
+          <div class="icon-wrapper bg-info bg-opacity-10">
+            <i class="bi bi-lightning text-info"></i>
           </div>
+          <h3 class="h4 mt-4">Lightning Fast</h3>
+          <p class="text-muted">
+            Process hundreds of resumes in minutes, not hours. Get instant
+            results and make hiring decisions faster than ever.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="icon-wrapper bg-warning bg-opacity-10">
+            <i class="bi bi-shield-check text-warning"></i>
+          </div>
+          <h3 class="h4 mt-4">Bias-Free Analysis</h3>
+          <p class="text-muted">
+            Our AI ensures fair and unbiased evaluation of candidates based
+            purely on qualifications and experience.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="icon-wrapper bg-danger bg-opacity-10">
+            <i class="bi bi-file-earmark-text text-danger"></i>
+          </div>
+          <h3 class="h4 mt-4">PDF Support</h3>
+          <p class="text-muted">
+            Seamlessly upload and process PDF resumes. Support for multiple file
+            formats and batch processing.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="icon-wrapper bg-secondary bg-opacity-10">
+            <i class="bi bi-graph-up-arrow text-secondary"></i>
+          </div>
+          <h3 class="h4 mt-4">Detailed Reports</h3>
+          <p class="text-muted">
+            Get comprehensive reports with candidate rankings, skill matches,
+            and detailed analysis for informed decision-making.
+          </p>
         </div>
       </div>
     </div>
@@ -67,49 +165,71 @@
 </div>
 
 <!-- How It Works Section -->
-<div class="bg-light py-5">
+<div class="py-5">
   <div class="container">
-    <h2 class="text-center mb-5">How It Works</h2>
-    <div class="row">
-      <div class="col-md-3 text-center">
-        <div class="step-number">1</div>
-        <h4>Upload Resumes</h4>
-        <p>Upload multiple PDF resumes in one go</p>
+    <div class="text-center mb-5">
+      <h2 class="display-5 fw-bold mb-3">How It Works</h2>
+      <p class="lead text-muted">
+        Simple steps to transform your hiring process
+      </p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-3">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h4>Upload Resumes</h4>
+          <p>Upload multiple PDF resumes in one go</p>
+        </div>
       </div>
-      <div class="col-md-3 text-center">
-        <div class="step-number">2</div>
-        <h4>Define Skills</h4>
-        <p>Specify required skills and qualifications</p>
+      <div class="col-md-3">
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h4>Define Requirements</h4>
+          <p>Specify required skills and qualifications</p>
+        </div>
       </div>
-      <div class="col-md-3 text-center">
-        <div class="step-number">3</div>
-        <h4>AI Analysis</h4>
-        <p>Our AI analyzes each resume</p>
+      <div class="col-md-3">
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h4>AI Analysis</h4>
+          <p>Our AI analyzes each resume</p>
+        </div>
       </div>
-      <div class="col-md-3 text-center">
-        <div class="step-number">4</div>
-        <h4>Get Results</h4>
-        <p>Receive ranked candidates instantly</p>
+      <div class="col-md-3">
+        <div class="step-card">
+          <div class="step-number">4</div>
+          <h4>Get Results</h4>
+          <p>Receive ranked candidates instantly</p>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- CTA Section -->
-<div class="py-5">
-  <div class="container text-center">
-    <h2 class="mb-4">Ready to Transform Your Hiring Process?</h2>
-    <p class="lead mb-4">
-      Start using our platform today and experience the future of resume
-      screening.
-    </p>
-    <div class="d-flex justify-content-center gap-3">
-      <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg"
-        >Upload Resumes</a
-      >
-      <a href="{{ url_for('results') }}" class="btn btn-outline-primary btn-lg"
-        >View Rankings</a
-      >
+<div class="cta-section py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 text-center">
+        <h2 class="display-5 fw-bold mb-4">
+          Ready to Transform Your Hiring Process?
+        </h2>
+        <p class="lead mb-4">
+          Join hundreds of companies already using our platform to streamline
+          their hiring process and find the best candidates faster.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+          <a
+            href="{{ url_for('auth.register') }}"
+            class="btn btn-primary btn-lg px-5 py-3"
+          >
+            <i class="bi bi-upload me-2"></i>Start Free Trial
+          </a>
+          <a href="#features" class="btn btn-outline-primary btn-lg px-5 py-3">
+            <i class="bi bi-play-circle me-2"></i>Watch Demo
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -117,15 +237,102 @@
 <style>
   .hero-section {
     background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
-    min-height: 80vh;
+    min-height: 75vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-shape {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 150px;
+    background: white;
+    clip-path: polygon(0 0, 100% 100%, 0 100%);
+  }
+
+  .hero-image-wrapper {
+    position: relative;
+  }
+
+  .floating-card {
+    position: absolute;
+    background: white;
+    padding: 15px 25px;
+    border-radius: 50px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
+    gap: 10px;
+    font-weight: 500;
+  }
+
+  .card-1 {
+    top: 20%;
+    left: -20px;
+  }
+
+  .card-2 {
+    bottom: 20%;
+    right: -20px;
+  }
+
+  .stat-card {
+    padding: 30px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .feature-card {
+    padding: 30px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+    height: 100%;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-wrapper i {
+    font-size: 24px;
+  }
+
+  .step-card {
+    text-align: center;
+    padding: 30px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+  }
+
+  .step-card:hover {
+    transform: translateY(-5px);
   }
 
   .step-number {
     width: 50px;
     height: 50px;
-    background-color: #0d6efd;
+    background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
     color: white;
     border-radius: 50%;
     display: flex;
@@ -136,12 +343,8 @@
     margin: 0 auto 20px;
   }
 
-  .card {
-    transition: transform 0.3s ease;
-  }
-
-  .card:hover {
-    transform: translateY(-5px);
+  .cta-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   }
 
   .btn-lg {

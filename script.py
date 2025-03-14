@@ -46,19 +46,28 @@ def extract_social_links(text):
 def extract_keywords_from_resume(text, tech_stack_dict):
     """Extract keywords from the resume based on the tech stack dictionary."""
     extracted_keywords = set()
-    text = text.lower()
+    text = text.lower()  # Convert resume text to lowercase
     
     # Check for the tech stack terms in the resume text
     for tech, terms in tech_stack_dict.items():
         for term in terms:
-            if term in text:
+            if term.lower() in text:  # Convert term to lowercase for comparison
                 extracted_keywords.add(tech)  # Add the tech stack term as a keyword
     return extracted_keywords
 
 def search_terms_in_text(text, terms):
     """Search for terms in the given text (recruiter skills)."""
-    text = text.lower()
-    found_terms = [term for term in terms if term.lower() in text]
+    found_terms = []
+    text = text.lower()  # Convert text to lowercase for case-insensitive matching
+    
+    # Create a set of lowercase words from the text
+    text_words = set(text.split())
+    
+    for term in terms:
+        term_lower = term.lower().strip()
+        # Check if the term is in the text or if it matches any of the extracted keywords
+        if term_lower in text or any(term_lower == word.lower() for word in text_words):
+            found_terms.append(term)  # Keep the original case of the term
     return found_terms
 
 def calculate_score(found_terms, total_terms):
@@ -226,7 +235,9 @@ else:
             social_links = extract_social_links(resume_text)
 
             # Search for recruiter skills in the extracted keywords
-            matched_terms = search_terms_in_text(" ".join(extracted_keywords), recruiter_skills)
+            # Convert extracted_keywords to a space-separated string, preserving the original case
+            extracted_keywords_text = " ".join(extracted_keywords)
+            matched_terms = search_terms_in_text(extracted_keywords_text, recruiter_skills)
 
             # Calculate the score for the resume based on the matched recruiter skills
             score = calculate_score(matched_terms, recruiter_skills)
@@ -239,10 +250,9 @@ else:
     # Display the rankings
     print("\nResume Rankings:")
     for idx, (file, score, extracted_keywords, matched_terms, social_links) in enumerate(resume_scores, start=1):
-        print(resume_text)
         print(f"{idx}. {file}")
         print(f"   Matching Score: {score}%")
-        print(f"   Extracted Keywords: {extracted_keywords}")
-        print(f"   Matched Recruiter Skills: {matched_terms}")
+        print(f"   Extracted Keywords: {', '.join(extracted_keywords)}")
+        print(f"   Matched Recruiter Skills: {', '.join(matched_terms)}")
         print(f"   Social Links: {social_links}")
         print("=" * 50)

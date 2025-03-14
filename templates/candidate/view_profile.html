@@ -1,0 +1,154 @@
+{% extends "base.html" %} {% block title %}View Profile - Resume Platform{%
+endblock %} {% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <div class="d-flex align-items-center">
+            <i class="bi bi-person-circle me-2" style="font-size: 1.5rem"></i>
+            <h4 class="mb-0">Candidate Profile</h4>
+          </div>
+          {% if current_user.id == profile.user_id %}
+          <a href="{{ url_for('candidate.profile') }}" class="btn btn-primary">
+            <i class="bi bi-pencil-square me-2"></i>Edit Profile
+          </a>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <!-- Profile Header -->
+          <div class="row mb-5">
+            <div class="col-md-8">
+              <h2 class="display-6 mb-2">
+                {{ profile.full_name or 'Not specified' }}
+              </h2>
+              <p class="text-muted mb-3">
+                <i class="bi bi-geo-alt me-2"></i>{{ profile.location or
+                'Location not specified' }}
+              </p>
+              <div class="d-flex gap-2">
+                <a
+                  href="https://github.com/{{ profile.github_username }}"
+                  target="_blank"
+                  class="btn btn-dark"
+                >
+                  <i class="bi bi-github me-2"></i>GitHub Profile
+                </a>
+                {% if profile.phone %}
+                <a
+                  href="tel:{{ profile.phone }}"
+                  class="btn btn-outline-primary"
+                >
+                  <i class="bi bi-telephone me-2"></i>Contact
+                </a>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-4 text-md-end">
+              <div class="card bg-light">
+                <div class="card-body text-center">
+                  <h3 class="display-4 mb-0">
+                    {{ profile.years_of_experience }}
+                  </h3>
+                  <p class="text-muted mb-0">Years of Experience</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- About Section -->
+          {% if profile.bio %}
+          <div class="mb-5">
+            <h5 class="mb-3">
+              <i class="bi bi-person-lines-fill me-2"></i>About
+            </h5>
+            <div class="card bg-light">
+              <div class="card-body">
+                <p class="mb-0">{{ profile.bio }}</p>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Education Section -->
+          {% if profile.education %}
+          <div class="mb-5">
+            <h5 class="mb-3">
+              <i class="bi bi-mortarboard me-2"></i>Education
+            </h5>
+            {% for edu in profile.education %}
+            <div class="card mb-3">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h6 class="mb-1">{{ edu.institution }}</h6>
+                    <p class="mb-1">{{ edu.degree }} in {{ edu.field }}</p>
+                    <p class="text-muted mb-0">
+                      <i class="bi bi-calendar me-2"></i>{{ edu.start_date }} -
+                      {{ edu.end_date }}
+                    </p>
+                  </div>
+                  <i
+                    class="bi bi-mortarboard-fill text-primary"
+                    style="font-size: 1.5rem"
+                  ></i>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- Skills Section -->
+          {% if profile.skills %}
+          <div class="mb-5">
+            <h5 class="mb-3"><i class="bi bi-tools me-2"></i>Skills</h5>
+            <div class="d-flex flex-wrap gap-2">
+              {% for skill in profile.skills %}
+              <span class="badge bg-primary rounded-pill px-3 py-2"
+                >{{ skill }}</span
+              >
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Contact Information -->
+          <div class="card bg-light">
+            <div class="card-body">
+              <h5 class="mb-3">
+                <i class="bi bi-envelope me-2"></i>Contact Information
+              </h5>
+              <div class="row">
+                <div class="col-md-6">
+                  <p class="mb-2">
+                    <i class="bi bi-envelope-fill me-2"></i>{{
+                    profile.user.email }}
+                  </p>
+                  {% if profile.phone %}
+                  <p class="mb-0">
+                    <i class="bi bi-telephone-fill me-2"></i>{{ profile.phone }}
+                  </p>
+                  {% endif %}
+                </div>
+                <div class="col-md-6 text-md-end">
+                  <a
+                    href="https://github.com/{{ profile.github_username }}"
+                    target="_blank"
+                    class="text-decoration-none"
+                  >
+                    <i class="bi bi-github me-2"></i>github.com/{{
+                    profile.github_username }}
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

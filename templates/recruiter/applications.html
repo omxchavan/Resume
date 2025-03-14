@@ -43,7 +43,15 @@ Resume Platform{% endblock %} {% block content %}
             <tbody>
               {% for application in applications %}
               <tr>
-                <td>{{ application.candidate.email }}</td>
+                <td>
+                  {{ application.candidate.email }}
+                  <a
+                    href="{{ url_for('candidate.view_profile', user_id=application.candidate_id) }}"
+                    class="btn btn-sm btn-outline-primary ms-2"
+                  >
+                    <i class="bi bi-person"></i> View Profile
+                  </a>
+                </td>
                 <td>{{ application.applied_at.strftime('%Y-%m-%d') }}</td>
                 <td>
                   <span

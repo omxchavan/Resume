@@ -1,0 +1,336 @@
+{% extends "base.html" %} {% block title %}Edit Profile - Resume Platform{%
+endblock %} {% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header d-flex align-items-center">
+          <i class="bi bi-person-circle me-2" style="font-size: 1.5rem"></i>
+          <h4 class="mb-0">Edit Your Profile</h4>
+        </div>
+        <div class="card-body">
+          <form method="POST" class="needs-validation" novalidate>
+            <div class="row g-4">
+              <!-- Basic Information Section -->
+              <div class="col-12">
+                <h5 class="mb-3 text-primary">Basic Information</h5>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-floating mb-3">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="github_username"
+                    name="github_username"
+                    value="{{ profile.github_username if profile else '' }}"
+                    required
+                  />
+                  <label for="github_username">GitHub Username *</label>
+                  <div class="invalid-feedback">
+                    Please enter your GitHub username.
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-floating mb-3">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="full_name"
+                    name="full_name"
+                    value="{{ profile.full_name if profile else '' }}"
+                  />
+                  <label for="full_name">Full Name</label>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-floating mb-3">
+                  <input
+                    type="tel"
+                    class="form-control"
+                    id="phone"
+                    name="phone"
+                    value="{{ profile.phone if profile else '' }}"
+                  />
+                  <label for="phone">Phone Number</label>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-floating mb-3">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="location"
+                    name="location"
+                    value="{{ profile.location if profile else '' }}"
+                  />
+                  <label for="location">Location</label>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div class="form-floating mb-3">
+                  <textarea
+                    class="form-control"
+                    id="bio"
+                    name="bio"
+                    style="height: 100px"
+                  >
+{{ profile.bio if profile else '' }}</textarea
+                  >
+                  <label for="bio">Bio</label>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-floating mb-3">
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="years_of_experience"
+                    name="years_of_experience"
+                    value="{{ profile.years_of_experience if profile else 0 }}"
+                    min="0"
+                  />
+                  <label for="years_of_experience">Years of Experience</label>
+                </div>
+              </div>
+
+              <!-- Education Section -->
+              <div class="col-12">
+                <h5 class="mb-3 text-primary mt-4">Education</h5>
+              </div>
+
+              <div class="col-12">
+                <div id="education-container">
+                  {% if profile and profile.education %} {% for edu in
+                  profile.education %}
+                  <div class="education-entry card mb-3">
+                    <div class="card-body">
+                      <div class="row g-3">
+                        <div class="col-md-6">
+                          <div class="form-floating">
+                            <input
+                              type="text"
+                              class="form-control"
+                              name="education_{{ loop.index0 }}_institution"
+                              placeholder="Institution"
+                              value="{{ edu.institution }}"
+                            />
+                            <label>Institution</label>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-floating">
+                            <input
+                              type="text"
+                              class="form-control"
+                              name="education_{{ loop.index0 }}_degree"
+                              placeholder="Degree"
+                              value="{{ edu.degree }}"
+                            />
+                            <label>Degree</label>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-floating">
+                            <input
+                              type="text"
+                              class="form-control"
+                              name="education_{{ loop.index0 }}_field"
+                              placeholder="Field of Study"
+                              value="{{ edu.field }}"
+                            />
+                            <label>Field of Study</label>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="form-floating">
+                            <input
+                              type="date"
+                              class="form-control"
+                              name="education_{{ loop.index0 }}_start_date"
+                              value="{{ edu.start_date }}"
+                            />
+                            <label>Start Date</label>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="form-floating">
+                            <input
+                              type="date"
+                              class="form-control"
+                              name="education_{{ loop.index0 }}_end_date"
+                              value="{{ edu.end_date }}"
+                            />
+                            <label>End Date</label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %} {% endif %}
+                </div>
+                <button
+                  type="button"
+                  class="btn btn-outline-primary"
+                  onclick="addEducationEntry()"
+                >
+                  <i class="bi bi-plus-circle me-2"></i>Add Education
+                </button>
+              </div>
+
+              <!-- Skills Section -->
+              <div class="col-12">
+                <h5 class="mb-3 text-primary mt-4">Skills</h5>
+              </div>
+
+              <div class="col-12">
+                <div class="row g-2 mb-3">
+                  {% if profile and profile.skills %} {% for skill in
+                  profile.skills %}
+                  <div class="col-md-4">
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        name="skills"
+                        value="{{ skill }}"
+                        id="skill_{{ loop.index }}"
+                        checked
+                      />
+                      <label
+                        class="form-check-label"
+                        for="skill_{{ loop.index }}"
+                      >
+                        {{ skill }}
+                      </label>
+                    </div>
+                  </div>
+                  {% endfor %} {% endif %}
+                </div>
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="new-skill"
+                    placeholder="Add new skill"
+                  />
+                  <button
+                    class="btn btn-outline-primary"
+                    type="button"
+                    onclick="addSkill()"
+                  >
+                    <i class="bi bi-plus-circle me-2"></i>Add
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <input
+              type="hidden"
+              name="education_count"
+              id="education_count"
+              value="{{ profile.education|length if profile else 0 }}"
+            />
+
+            <div class="mt-5 text-center">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="bi bi-save me-2"></i>Save Profile
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let educationCount = {{ profile.education|length if profile else 0 }};
+
+  function addEducationEntry() {
+      const container = document.getElementById('education-container');
+      const entry = document.createElement('div');
+      entry.className = 'education-entry card mb-3';
+      entry.innerHTML = `
+          <div class="card-body">
+              <div class="row g-3">
+                  <div class="col-md-6">
+                      <div class="form-floating">
+                          <input type="text" class="form-control" name="education_${educationCount}_institution" placeholder="Institution">
+                          <label>Institution</label>
+                      </div>
+                  </div>
+                  <div class="col-md-6">
+                      <div class="form-floating">
+                          <input type="text" class="form-control" name="education_${educationCount}_degree" placeholder="Degree">
+                          <label>Degree</label>
+                      </div>
+                  </div>
+                  <div class="col-md-6">
+                      <div class="form-floating">
+                          <input type="text" class="form-control" name="education_${educationCount}_field" placeholder="Field of Study">
+                          <label>Field of Study</label>
+                      </div>
+                  </div>
+                  <div class="col-md-3">
+                      <div class="form-floating">
+                          <input type="date" class="form-control" name="education_${educationCount}_start_date">
+                          <label>Start Date</label>
+                      </div>
+                  </div>
+                  <div class="col-md-3">
+                      <div class="form-floating">
+                          <input type="date" class="form-control" name="education_${educationCount}_end_date">
+                          <label>End Date</label>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      `;
+      container.appendChild(entry);
+      educationCount++;
+      document.getElementById('education_count').value = educationCount;
+  }
+
+  function addSkill() {
+      const skillInput = document.getElementById('new-skill');
+      const skill = skillInput.value.trim();
+      if (skill) {
+          const skillsContainer = document.querySelector('.row.g-2');
+          const col = document.createElement('div');
+          col.className = 'col-md-4';
+          col.innerHTML = `
+              <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="skills" value="${skill}" id="skill_${Date.now()}">
+                  <label class="form-check-label" for="skill_${Date.now()}">
+                      ${skill}
+                  </label>
+              </div>
+          `;
+          skillsContainer.appendChild(col);
+          skillInput.value = '';
+      }
+  }
+
+  // Form validation
+  (function () {
+      'use strict'
+      var forms = document.querySelectorAll('.needs-validation')
+      Array.prototype.slice.call(forms).forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+              if (!form.checkValidity()) {
+                  event.preventDefault()
+                  event.stopPropagation()
+              }
+              form.classList.add('was-validated')
+          }, false)
+      })
+  })()
+</script>
+{% endblock %}

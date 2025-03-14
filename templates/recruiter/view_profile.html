@@ -1,0 +1,91 @@
+{% extends "base.html" %} {% block title %}View Profile - Resume Platform{%
+endblock %} {% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h4 class="mb-0">Recruiter Profile</h4>
+          {% if current_user.id == profile.user_id %}
+          <a
+            href="{{ url_for('recruiter.profile') }}"
+            class="btn btn-primary btn-sm"
+            >Edit Profile</a
+          >
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <div class="row mb-4">
+            <div class="col-md-8">
+              <h2>{{ profile.company_name or 'Not specified' }}</h2>
+              <p class="text-muted">
+                {{ profile.location or 'Location not specified' }}
+              </p>
+            </div>
+            <div class="col-md-4 text-end">
+              {% if profile.company_website %}
+              <a
+                href="{{ profile.company_website }}"
+                target="_blank"
+                class="btn btn-outline-primary"
+              >
+                <i class="fas fa-globe"></i> Visit Website
+              </a>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if profile.bio %}
+          <div class="mb-4">
+            <h5>About</h5>
+            <p>{{ profile.bio }}</p>
+          </div>
+          {% endif %}
+
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <h5>Contact Information</h5>
+              <ul class="list-unstyled">
+                {% if profile.phone %}
+                <li><i class="fas fa-phone"></i> {{ profile.phone }}</li>
+                {% endif %}
+                <li>
+                  <i class="fas fa-envelope"></i> {{ profile.user.email }}
+                </li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h5>Position</h5>
+              <p>{{ profile.position or 'Not specified' }}</p>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <h5>Active Job Postings</h5>
+            {% if profile.user.job_postings %}
+            <div class="list-group">
+              {% for job in profile.user.job_postings %}
+              <a
+                href="{{ url_for('recruiter.view_job', job_id=job.id) }}"
+                class="list-group-item list-group-item-action"
+              >
+                <div class="d-flex w-100 justify-content-between">
+                  <h6 class="mb-1">{{ job.title }}</h6>
+                  <small>{{ job.created_at.strftime('%Y-%m-%d') }}</small>
+                </div>
+                <p class="mb-1">{{ job.company }}</p>
+              </a>
+              {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted">No active job postings</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
