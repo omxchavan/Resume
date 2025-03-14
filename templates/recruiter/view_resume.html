@@ -1,141 +1,56 @@
 {% extends "base.html" %} {% block title %}View Resume - Resume Platform{%
 endblock %} {% block content %}
-<div class="row">
-  <div class="col-12">
-    <div class="card">
-      <div
-        class="card-header d-flex justify-content-between align-items-center"
-      >
-        <h5 class="mb-0">Candidate Resume</h5>
-        <a
-          href="{{ url_for('recruiter.view_applications', job_id=application.job_posting.id) }}"
-          class="btn btn-outline-primary"
-        >
-          <i class="bi bi-arrow-left"></i> Back to Applications
-        </a>
+<div class="container py-5">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4>Resume for {{ application.candidate.full_name }}</h4>
+        <div>
+          <a
+            href="{{ url_for('recruiter.view_applications', job_id=application.job_posting_id) }}"
+            class="btn btn-outline-secondary"
+          >
+            <i class="bi bi-arrow-left me-2"></i>Back to Applications
+          </a>
+        </div>
       </div>
-      <div class="card-body">
-        <div class="row mb-4">
-          <div class="col-md-6">
-            <h6>Application Details</h6>
-            <p>
-              <strong>Candidate:</strong> {{ application.candidate.email }}
-              <a
-                href="{{ url_for('candidate.view_profile', user_id=application.candidate_id) }}"
-                class="btn btn-sm btn-outline-primary ms-2"
-              >
-                <i class="bi bi-person"></i> View Profile
-              </a>
-            </p>
-            <p>
-              <strong>Applied Date:</strong> {{
-              application.applied_at.strftime('%Y-%m-%d') }}
-            </p>
-            <p>
-              <strong>Match Score:</strong>
-              <span
-                class="badge bg-{{ 'success' if application.match_score >= 70 else 'warning' if application.match_score >= 40 else 'danger' }}"
-              >
-                {{ "%.1f"|format(application.match_score) }}%
-              </span>
-            </p>
-            <p>
-              <strong>Status:</strong>
-              <span
-                class="badge bg-{{ 'success' if application.status == 'accepted' else 'warning' if application.status == 'reviewed' else 'info' if application.status == 'pending' else 'danger' }}"
-              >
-                {{ application.status|title }}
-              </span>
-            </p>
-          </div>
-          <div class="col-md-6">
-            <h6>Job Details</h6>
-            <p>
-              <strong>Position:</strong> {{ application.job_posting.title }}
-            </p>
-            <p>
-              <strong>Company:</strong> {{ application.job_posting.company }}
-            </p>
-            <p>
-              <strong>Location:</strong> {{ application.job_posting.location }}
-            </p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-file-earmark-text me-2"></i>
+            <h5 class="mb-0">Resume Details</h5>
           </div>
         </div>
-
-        <div class="mb-4">
-          <h6>Required Skills vs. Candidate Skills</h6>
+        <div class="card-body">
           <div class="row">
             <div class="col-md-6">
-              <h6 class="text-muted">Required Skills</h6>
+              <h6 class="mb-3">Skills</h6>
               <div class="d-flex flex-wrap gap-2">
-                {% for skill in application.job_posting.required_skills %}
-                <span
-                  class="badge bg-{{ 'success' if skill in resume.skills else 'secondary' }}"
-                >
-                  {{ skill }}
-                </span>
+                {% for skill in resume.skills %}
+                <span class="badge bg-light text-dark">{{ skill }}</span>
                 {% endfor %}
               </div>
             </div>
             <div class="col-md-6">
-              <h6 class="text-muted">Candidate Skills</h6>
-              <div class="d-flex flex-wrap gap-2">
-                {% for skill in resume.skills %}
-                <span
-                  class="badge bg-{{ 'success' if skill in application.job_posting.required_skills else 'primary' }}"
+              <h6 class="mb-3">Match Score</h6>
+              <div class="progress mb-3">
+                <div
+                  class="progress-bar"
+                  role="progressbar"
+                  style="width: {{ application.match_score }}%;"
                 >
-                  {{ skill }}
-                </span>
-                {% endfor %}
+                  {{ application.match_score }}%
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="mb-4">
-          <h6>Resume Preview</h6>
-          <div class="ratio ratio-16x9">
-            <iframe
-              src="{{ url_for('static', filename=resume.file_path) }}"
-              class="rounded"
-            ></iframe>
-          </div>
-        </div>
-
-        <div class="d-flex justify-content-between">
-          <div class="btn-group">
-            <a
-              href="{{ url_for('recruiter.chat', application_id=application.id) }}"
-              class="btn btn-primary"
-            >
-              <i class="bi bi-chat-dots"></i> Chat about Resume
-            </a>
-            <form
-              action="{{ url_for('recruiter.update_application_status', application_id=application.id) }}"
-              method="POST"
-              class="d-inline"
-            >
-              <input type="hidden" name="status" value="reviewed" />
-              <button type="submit" class="btn btn-outline-primary">
-                Mark as Reviewed
-              </button>
-            </form>
-            <form
-              action="{{ url_for('recruiter.update_application_status', application_id=application.id) }}"
-              method="POST"
-              class="d-inline"
-            >
-              <input type="hidden" name="status" value="accepted" />
-              <button type="submit" class="btn btn-success">Accept</button>
-            </form>
-            <form
-              action="{{ url_for('recruiter.update_application_status', application_id=application.id) }}"
-              method="POST"
-              class="d-inline"
-            >
-              <input type="hidden" name="status" value="rejected" />
-              <button type="submit" class="btn btn-danger">Reject</button>
-            </form>
+          <div class="mt-4">
+            <h6 class="mb-3">Resume Text</h6>
+            <div class="border rounded p-3 bg-light">
+              <pre class="mb-0">{{ resume.extracted_text }}</pre>
+            </div>
           </div>
         </div>
       </div>

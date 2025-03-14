@@ -12,6 +12,7 @@ from utils import (
     extract_text_from_pdf, extract_keywords_from_resume, tech_stack_dict,
     search_terms_in_text, calculate_score, process_resumes, extract_social_links
 )
+from config import Config
 
 # Load environment variables from .flaskenv file
 load_dotenv()
@@ -20,8 +21,7 @@ app = Flask(__name__)
 app.secret_key = "resume_ranking_secret_key"
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///resume_platform.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config.from_object(Config)
 
 # Initialize extensions
 db.init_app(app)

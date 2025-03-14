@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+myenv/
+.env
+.flaskenv
+.DS_Store
+.git/
+.gitignore
+.idea/
+.vscode/
+*.swp
+*.swo 
