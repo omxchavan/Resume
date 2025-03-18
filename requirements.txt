@@ -10,4 +10,9 @@ python-dotenv==1.0.0
 email-validator==2.1.0
 pydantic==2.5.2
 gunicorn==21.2.0
-flask-migrate==4.0.5 
+flask-migrate==4.0.5
+google-generativeai==0.3.1
+langchain==0.1.12
+langchain-google-genai==0.0.11
+chromadb==0.4.24
+pdfplumber==0.10.4 

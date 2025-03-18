@@ -2,6 +2,14 @@ import re
 import spacy
 import fitz  # PyMuPDF for PDF text extraction
 import os
+from langchain_google_genai import GoogleGenerativeAI
+from langchain.prompts import ChatPromptTemplate
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_community.vectorstores import Chroma
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.chains import create_retrieval_chain
+import pdfplumber
 
 # Load spaCy NLP model (for general text cleaning)
 try:
@@ -147,12 +155,12 @@ def clean_text(text):
     return text
 
 def extract_text_from_pdf(pdf_path):
-    """Extract text from a PDF file."""
+    """Extract text from a PDF file using pdfplumber for better text extraction."""
     text = ""
     try:
-        doc = fitz.open(pdf_path)
-        for page in doc:
-            text += page.get_text("text") + "\n"
+        with pdfplumber.open(pdf_path) as pdf:
+            for page in pdf.pages:
+                text += page.extract_text() or ""
     except Exception as e:
         print(f"Error reading PDF: {e}")
     return clean_text(text)
@@ -242,4 +250,284 @@ def process_resumes(directory, recruiter_skills):
 
     # Sort the resumes by score in descending order
     resume_scores.sort(key=lambda x: x['score'], reverse=True)
-    return resume_scores 
+    return resume_scores
+
+def process_resume_for_qa(resume_text, api_key):
+    """
+    Process resume text for question answering using LangChain and vector embeddings.
+    
+    Args:
+        resume_text (str): The extracted text from the resume
+        api_key (str): Google Gemini API key
+        
+    Returns:
+        tuple: (vector_store, model) for question answering
+    """
+    try:
+        # Validate API key format
+        if not api_key or not api_key.startswith('AIza'):
+            print("Error: Invalid API key format")
+            return None, None
+
+        # Validate resume text
+        if not resume_text or not isinstance(resume_text, str):
+            print("Error: Invalid resume text")
+            return None, None
+
+        print("Initializing Gemini model...")
+        # Try the newer Google AI client approach first
+        try:
+            from google import genai
+            
+            # Configure the client
+            genai.configure(api_key=api_key)
+            
+            # Test the connection with a simple request
+            print("Testing API connection...")
+            model = genai.GenerativeModel('gemini-1.0-pro')
+            response = model.generate_content("Hello")
+            print(f"API connection test successful: {response.text}")
+            
+            # Since we're using a different client library, we'll still initialize the LangChain model
+            # as it's needed for the chain creation later
+            model = GoogleGenerativeAI(
+                model="gemini-1.0-pro",
+                google_api_key=api_key,
+                temperature=0.7,
+                max_output_tokens=2048,
+                top_p=0.8,
+                top_k=40,
+                convert_system_message_to_human=True
+            )
+        except Exception as e:
+            print(f"Error with new Google AI client: {str(e)}")
+            print("Falling back to LangChain GoogleGenerativeAI...")
+            model = GoogleGenerativeAI(
+                model="gemini-1.0-pro",
+                google_api_key=api_key,
+                temperature=0.7,
+                max_output_tokens=2048,
+                top_p=0.8,
+                top_k=40,
+                convert_system_message_to_human=True
+            )
+        
+        print("Splitting resume text into chunks...")
+        # Split the resume text into smaller chunks for better processing
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=500,
+            chunk_overlap=100,
+            length_function=len,
+            separators=["\n\n", "\n", " ", ""]
+        )
+        documents = text_splitter.create_documents([resume_text])
+        print(f"Created {len(documents)} chunks")
+        
+        # Try using the direct Google AI embeddings API first
+        try:
+            print("Attempting direct Google AI embeddings...")
+            from google import genai
+            
+            # Create a simple embedding function that uses the Google AI client directly
+            class DirectGoogleAIEmbeddings:
+                def __init__(self, api_key):
+                    self.client = genai.configure(api_key=api_key)
+                    self.embedding_model = "models/embedding-001"
+                
+                def embed_documents(self, texts):
+                    results = []
+                    for text in texts:
+                        result = genai.embed_content(
+                            model=self.embedding_model,
+                            content=text,
+                            task_type="retrieval_document"
+                        )
+                        results.append(result["embedding"])
+                    return results
+                
+                def embed_query(self, text):
+                    result = genai.embed_content(
+                        model=self.embedding_model,
+                        content=text,
+                        task_type="retrieval_query"
+                    )
+                    return result["embedding"]
+            
+            embeddings = DirectGoogleAIEmbeddings(api_key)
+            # Test the embedding with a simple text
+            test_embed = embeddings.embed_query("Test")
+            print(f"Direct embeddings test successful")
+        except Exception as e:
+            print(f"Direct Google AI embeddings failed: {str(e)}")
+            print("Falling back to LangChain GoogleGenerativeAIEmbeddings...")
+            
+            # Create embeddings with enhanced retry logic
+            max_retries = 5  # Increased retries
+            retry_delay = 5  # Increased delay between retries
+            last_error = None
+            
+            print("Creating embeddings with LangChain...")
+            for attempt in range(max_retries):
+                try:
+                    import socket
+                    import time
+                    
+                    # Try to resolve DNS before creating embeddings
+                    print(f"Attempt {attempt + 1}: Checking DNS resolution...")
+                    host = "generativelanguage.googleapis.com"
+                    try:
+                        print(f"Resolving {host}...")
+                        ip = socket.gethostbyname(host)
+                        print(f"Successfully resolved {host} to {ip}")
+                    except socket.gaierror as e:
+                        print(f"DNS resolution failed: {str(e)}")
+                        if attempt < max_retries - 1:
+                            print(f"Retrying in {retry_delay} seconds...")
+                            time.sleep(retry_delay)
+                            retry_delay *= 1.5  # Exponential backoff
+                            continue
+                        else:
+                            raise Exception(f"DNS resolution failed after {max_retries} attempts")
+                    
+                    embeddings = GoogleGenerativeAIEmbeddings(
+                        model="models/embedding-001",
+                        google_api_key=api_key,
+                        max_retries=3,
+                        timeout=30,
+                        request_timeout=30
+                    )
+                    print("LangChain embeddings created successfully")
+                    break
+                except Exception as e:
+                    last_error = e
+                    print(f"Embedding attempt {attempt + 1} failed: {str(e)}")
+                    if attempt < max_retries - 1:
+                        print(f"Retrying in {retry_delay} seconds...")
+                        time.sleep(retry_delay)
+                        retry_delay *= 1.5  # Exponential backoff
+                    else:
+                        raise last_error
+        
+        print("Creating vector store...")
+        # Create vector store with persistence and error handling
+        try:
+            vector_store = Chroma.from_documents(
+                documents,
+                embedding=embeddings,
+                persist_directory="chroma_db",
+                collection_name="resume_qa"
+            )
+            vector_store.persist()
+            print("Vector store created and persisted successfully")
+        except Exception as e:
+            print(f"Error creating vector store: {str(e)}")
+            raise
+        
+        return vector_store, model
+    except Exception as e:
+        print(f"Error processing resume for QA: {str(e)}")
+        print(f"Error type: {type(e).__name__}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        return None, None
+
+def ask_resume_question(resume_text, question, api_key):
+    """
+    Ask a question about a resume using LangChain and vector embeddings.
+    
+    Args:
+        resume_text (str): The extracted text from the resume
+        question (str): The question to ask about the resume
+        api_key (str): Google Gemini API key
+        
+    Returns:
+        str: The response from the model or an error message
+    """
+    try:
+        # Validate inputs
+        if not resume_text or not isinstance(resume_text, str):
+            return "Error: Invalid resume text provided"
+        if not question or not isinstance(question, str):
+            return "Error: Invalid question provided"
+        if not api_key or not api_key.startswith('AIza'):
+            return "Error: Invalid API key format"
+
+        print("Processing resume for QA...")
+        # Process the resume for QA
+        vector_store, model = process_resume_for_qa(resume_text, api_key)
+        if not vector_store or not model:
+            return "Error: Failed to process resume for question answering."
+        
+        print("Creating prompt template...")
+        # Create the prompt template with more specific instructions
+        prompt = ChatPromptTemplate.from_template("""
+        You are an expert HR professional analyzing a candidate's resume.
+        Based on the resume content provided, please answer the following question.
+        If the information is not available in the resume, please indicate that.
+        Be specific and concise in your response.
+        Focus only on information that is explicitly mentioned in the resume.
+        
+        Resume Content:
+        {context}
+        
+        Question: {question}
+        
+        Answer:
+        """)
+        
+        print("Creating document chain...")
+        # Create the document chain with optimized settings
+        document_chain = create_stuff_documents_chain(
+            model, 
+            prompt,
+            callbacks=None,
+            timeout=60  # Increased timeout
+        )
+        
+        print("Creating retrieval chain...")
+        # Create the retrieval chain with optimized settings
+        retriever = vector_store.as_retriever(
+            search_kwargs={
+                "k": 2,  # Reduced number of chunks
+                "score_threshold": 0.5  # Only retrieve relevant chunks
+            }
+        )
+        retrieval_chain = create_retrieval_chain(retriever, document_chain)
+        
+        print("Getting response...")
+        # Get the response with retry logic
+        max_retries = 3
+        retry_delay = 2  # seconds
+        
+        for attempt in range(max_retries):
+            try:
+                print(f"Attempt {attempt + 1} of {max_retries}")
+                response = retrieval_chain.invoke({
+                    'question': question,
+                    'context': retriever.invoke(question)
+                })
+                print("Response received successfully")
+                return response['answer']
+            except Exception as e:
+                print(f"Query attempt {attempt + 1} failed: {str(e)}")
+                if attempt == max_retries - 1:
+                    raise e
+                print(f"Retrying in {retry_delay} seconds...")
+                import time
+                time.sleep(retry_delay)
+            
+    except Exception as e:
+        error_msg = str(e)
+        print(f"Error in ask_resume_question: {error_msg}")
+        print(f"Error type: {type(e).__name__}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        
+        if "api key" in error_msg.lower():
+            return "Error: Invalid or missing API key. Please check your configuration."
+        elif "timeout" in error_msg.lower():
+            return "Error: The request timed out. Please try again with a more specific question."
+        elif "dns" in error_msg.lower():
+            return "Error: Network connectivity issue. Please check your internet connection and try again."
+        else:
+            return f"Error querying resume: {error_msg}" 

@@ -13,6 +13,7 @@ from utils import (
     search_terms_in_text, calculate_score, process_resumes, extract_social_links
 )
 from config import Config
+import jinja2
 
 # Load environment variables from .flaskenv file
 load_dotenv()
@@ -22,6 +23,7 @@ app.secret_key = "resume_ranking_secret_key"
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 app.config.from_object(Config)
+app.config['GEMINI_API_KEY'] = os.environ.get('GEMINI_API_KEY')
 
 # Initialize extensions
 db.init_app(app)
@@ -40,6 +42,14 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Allowed file extensions
 ALLOWED_EXTENSIONS = {'pdf'}
+
+# Add nl2br Jinja2 filter
+@app.template_filter('nl2br')
+def nl2br(value):
+    """Convert newlines to <br> tags."""
+    if value:
+        return jinja2.utils.markupsafe.Markup(value.replace('\n', '<br>'))
+    return value
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -127,4 +137,5 @@ def clear_uploads():
         return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    port = int(os.environ.get('PORT', 5001))
+    app.run(host='0.0.0.0', port=port)

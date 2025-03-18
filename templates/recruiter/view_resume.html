@@ -15,7 +15,7 @@ endblock %} {% block content %}
         </div>
       </div>
 
-      <div class="card">
+      <div class="card mb-4">
         <div class="card-header">
           <div class="d-flex align-items-center">
             <i class="bi bi-file-earmark-text me-2"></i>
@@ -50,6 +50,56 @@ endblock %} {% block content %}
             <h6 class="mb-3">Resume Text</h6>
             <div class="border rounded p-3 bg-light">
               <pre class="mb-0">{{ resume.extracted_text }}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <!-- GitHub Profile Link -->
+          <div class="card">
+            <div class="card-header">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-github me-2"></i>
+                <h5 class="mb-0">GitHub Profile</h5>
+              </div>
+            </div>
+            <div class="card-body">
+              <p>
+                View this candidate's GitHub profile to see their repositories,
+                contributions, and coding activity.
+              </p>
+              <a
+                href="{{ url_for('recruiter.view_github_profile', candidate_id=application.candidate_id) }}"
+                class="btn btn-primary"
+              >
+                <i class="bi bi-github me-2"></i>View GitHub Profile
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <!-- AI Resume Assistant -->
+          <div class="card">
+            <div class="card-header">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-chat-text me-2"></i>
+                <h5 class="mb-0">AI Resume Assistant</h5>
+              </div>
+            </div>
+            <div class="card-body">
+              <p>
+                Ask questions about this resume to get AI-powered insights
+                without having to read the entire document.
+              </p>
+              <a
+                href="{{ url_for('recruiter.ask_resume_question_route', application_id=application.id) }}"
+                class="btn btn-primary"
+              >
+                <i class="bi bi-chat-text me-2"></i>Ask Questions About Resume
+              </a>
             </div>
           </div>
         </div>
