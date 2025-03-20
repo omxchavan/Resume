@@ -14,6 +14,16 @@ load_dotenv()
 
 recruiter = Blueprint('recruiter', __name__)
 
+def escape_prompt(prompt):
+    escaped_prompt = (
+        prompt.replace('\\', '\\\\')  # Escape backslashes first
+        .replace('"', '\\"')  # Escape double quotes
+        .replace('\n', '\\n')  # Escape newlines
+        .replace('*', '\\*')  # Escape asterisks
+        .replace("'", "\\'")  # Escape single quotes
+        .replace("\t", "\\t")  # Escape tabs
+    )
+    return escaped_prompt
 
 # Helper function for the Gemini API
 def ask_resume_question(resume_text, question, api_key):
@@ -33,6 +43,7 @@ def ask_resume_question(resume_text, question, api_key):
     You are a helpful assistant for recruiters. 
     Based on the resume text provided below, answer the following question as accurately as possible.
     If the information is not present in the resume, clearly state that.
+    dont give any astericks or symbold in ouput
     
     RESUME TEXT:
     {resume_text}
@@ -42,7 +53,7 @@ def ask_resume_question(resume_text, question, api_key):
     """
     
     # Escape the prompt for JSON
-    escaped_prompt = prompt.replace('"', '\\"').replace('\n', '\\n')
+    escaped_prompt =escape_prompt(prompt)
     
     # Prepare the curl command - using regular strings instead of f-strings for the parts with backslashes
     curl_command = [

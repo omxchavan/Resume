@@ -1,662 +1,665 @@
 {% extends "base.html" %} {% block title %}Ask Resume Questions - {{
-candidate.name }}{% endblock %} {% block styles %} {{ super() }}
-<style>
-  /* Animations and enhanced styling */
-  .fade-in {
-    animation: fadeIn 0.5s ease-in-out;
-  }
-
-  @keyframes fadeIn {
-    from {
+  candidate.name }}{% endblock %} {% block styles %} {{ super() }}
+  <style>
+    /* Animations and enhanced styling */
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+  
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  
+    .slide-in {
+      animation: slideIn 0.6s ease-out;
+    }
+  
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+  
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.03);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+  
+    .highlight-text {
+      background-color: rgba(59, 113, 202, 0.1);
+      border-radius: 3px;
+      padding: 2px 4px;
+    }
+  
+    .resume-section {
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 1rem;
+    }
+  
+    .resume-section:last-child {
+      border-bottom: none;
+    }
+  
+    .resume-section h6 {
+      color: #3b71ca;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+    }
+  
+    .resume-section h6 i {
+      margin-right: 8px;
+    }
+  
+    .resume-content {
+      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+  
+    .resume-content:hover {
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+  
+    .btn-hover-effect:hover {
+      transform: translateY(-2px);
+      transition: transform 0.2s ease;
+    }
+  
+    .answer-content {
+      transition: all 0.3s ease;
+    }
+  
+    .answer-content p {
+      margin-bottom: 0.75rem;
+    }
+  
+    .answer-section {
       opacity: 0;
-      transform: translateY(10px);
+      animation: fadeIn 0.8s ease-in-out forwards;
+      animation-delay: 0.2s;
+      position: relative;
+      z-index: 1000; /* Lower z-index than dropdown */
     }
-    to {
+  
+    .dropdown-item:hover {
+      background-color: rgba(59, 113, 202, 0.1);
+    }
+  
+    /* Fixed dropdown styling with higher z-index */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+  
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      margin-top: 2px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+      right: 0;
+      min-width: 280px;
+      border-radius: 0.375rem;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      padding: 0.5rem 0;
+      background-color: #fff;
+      z-index: 2000; /* Higher z-index to appear above everything */
+    }
+  
+    .dropdown-toggle.btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+  
+    .dropdown-item {
+      padding: 0.5rem 1rem;
+      clear: both;
+      font-weight: 400;
+      color: #212529;
+      text-align: inherit;
+      white-space: nowrap;
+      background-color: transparent;
+      border: 0;
+      display: block;
+      width: 100%;
+      text-decoration: none;
+    }
+  
+    .dropdown-menu.show {
+      display: block;
       opacity: 1;
-      transform: translateY(0);
+      animation: fadeIn 0.2s ease;
     }
-  }
-
-  .slide-in {
-    animation: slideIn 0.6s ease-out;
-  }
-
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateX(-20px);
+  
+    /* Ensuring dropdown is above all content */
+    .d-flex.gap-2 {
+      position: relative;
+      z-index: 1100; /* Higher than answer-section */
     }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
-  .pulse {
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.03);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-
-  .highlight-text {
-    background-color: rgba(59, 113, 202, 0.1);
-    border-radius: 3px;
-    padding: 2px 4px;
-  }
-
-  .resume-section {
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 1rem;
-  }
-
-  .resume-section:last-child {
-    border-bottom: none;
-  }
-
-  .resume-section h6 {
-    color: #3b71ca;
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-    display: flex;
-    align-items: center;
-  }
-
-  .resume-section h6 i {
-    margin-right: 8px;
-  }
-
-  .resume-content {
-    border-radius: 6px;
-    transition: all 0.3s ease;
-  }
-
-  .resume-content:hover {
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  }
-
-  .btn-hover-effect:hover {
-    transform: translateY(-2px);
-    transition: transform 0.2s ease;
-  }
-
-  .answer-content {
-    transition: all 0.3s ease;
-  }
-
-  .answer-content p {
-    margin-bottom: 0.75rem;
-  }
-
-  .answer-section {
-    opacity: 0;
-    animation: fadeIn 0.8s ease-in-out forwards;
-    animation-delay: 0.2s;
-  }
-
-  .dropdown-item:hover {
-    background-color: rgba(59, 113, 202, 0.1);
-  }
-
-  /* Improved dropdown styling */
-  .dropdown {
-    position: relative;
-    display: inline-block;
-  }
-
-  .dropdown-menu {
-    z-index: 1060;
-    position: absolute;
-    margin-top: 2px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-    right: 0;
-    min-width: 280px;
-    border-radius: 0.375rem;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 0.5rem 0;
-    background-color: #fff;
-    overflow: visible;
-  }
-
-  .dropdown-toggle.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .dropdown-item {
-    padding: 0.5rem 1rem;
-    clear: both;
-    font-weight: 400;
-    color: #212529;
-    text-align: inherit;
-    white-space: nowrap;
-    background-color: transparent;
-    border: 0;
-    display: block;
-    width: 100%;
-    text-decoration: none;
-  }
-
-  .dropdown-menu.show {
-    display: block;
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity 0.2s ease, transform 0.2s ease;
-  }
-
-  /* Ensure dropdown is above other content */
-  .answer-section {
-    position: relative;
-    z-index: 1;
-  }
-
-  .d-flex.gap-2 {
-    position: relative;
-    z-index: 1070;
-  }
-</style>
-{% endblock %} {% block content %}
-<div class="container my-5 fade-in">
-  <div class="row mb-4">
-    <div class="col-12">
-      <nav aria-label="breadcrumb" class="slide-in">
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item">
-            <a href="{{ url_for('recruiter.dashboard') }}">Dashboard</a>
-          </li>
-          <li class="breadcrumb-item">
-            <a
-              href="{{ url_for('recruiter.view_applications', job_id=job.id) }}"
-              >Applications</a
-            >
-          </li>
-          <li class="breadcrumb-item active">Resume Analysis</li>
-        </ol>
-      </nav>
-    </div>
-  </div>
-
-  <div class="card border-0 shadow-sm mb-4 slide-in">
-    <div class="card-body p-4">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h1 class="h3 mb-1">Resume Analysis: {{ candidate.name }}</h1>
-          <p class="text-muted mb-0">
-            <span class="badge bg-info">{{ job.title }}</span> • Use AI to
-            analyze this candidate's resume
-          </p>
-        </div>
-        <a
-          href="{{ url_for('recruiter.view_applications', job_id=job.id) }}"
-          class="btn btn-outline-secondary btn-hover-effect"
-        >
-          <i class="bi bi-arrow-left"></i> Back to Applications
-        </a>
+  </style>
+  {% endblock %} {% block content %}
+  <div class="container my-5 fade-in">
+    <div class="row mb-4">
+      <div class="col-12">
+        <nav aria-label="breadcrumb" class="slide-in">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{{ url_for('recruiter.dashboard') }}">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a
+                href="{{ url_for('recruiter.view_applications', job_id=job.id) }}"
+                >Applications</a
+              >
+            </li>
+            <li class="breadcrumb-item active">Resume Analysis</li>
+          </ol>
+        </nav>
       </div>
     </div>
-  </div>
-
-  <div class="row g-4">
-    <!-- Resume Content Panel -->
-    <div class="col-lg-5">
-      <div
-        class="card border-0 shadow-sm h-100 slide-in"
-        style="animation-delay: 0.1s"
-      >
-        <div class="card-header bg-white py-3">
-          <div class="d-flex align-items-center">
-            <i class="bi bi-file-earmark-text me-2 text-primary"></i>
-            <h5 class="mb-0">Resume Content</h5>
+  
+    <div class="card border-0 shadow-sm mb-4 slide-in">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 class="h3 mb-1">Resume Analysis: {{ candidate.name }}</h1>
+            <p class="text-muted mb-0">
+              <span class="badge bg-info">{{ job.title }}</span> • Use AI to
+              analyze this candidate's resume
+            </p>
           </div>
-        </div>
-        <div class="card-body p-0">
-          <div
-            class="resume-content p-3"
-            style="max-height: 70vh; overflow-y: auto"
+          <a
+            href="{{ url_for('recruiter.view_applications', job_id=job.id) }}"
+            class="btn btn-outline-secondary btn-hover-effect"
           >
-            <!-- Structured resume format instead of plain text -->
-            <div id="structured-resume" class="p-3">
-              <!-- Parse and display the resume in a structured format using JavaScript -->
-              {% set sections = [ {'icon': 'bi-person-vcard', 'title': 'Personal
-              Information'}, {'icon': 'bi-briefcase', 'title': 'Work
-              Experience'}, {'icon': 'bi-mortarboard', 'title': 'Education'},
-              {'icon': 'bi-tools', 'title': 'Skills'}, {'icon': 'bi-award',
-              'title': 'Achievements'}, {'icon': 'bi-translate', 'title':
-              'Languages'}, {'icon': 'bi-braces', 'title': 'Projects'}, {'icon':
-              'bi-journal-text', 'title': 'Certifications'}, {'icon': 'bi-link',
-              'title': 'References'} ] %}
-
-              <div class="placeholder-resume">
-                <p class="fst-italic text-muted mb-3">
-                  Showing resume content in structured format:
-                </p>
-
-                {% for section in sections %}
-                <div
-                  class="resume-section fade-in"
-                  {%
-                  if
-                  loop.index
-                  %}style="animation-delay: {{ loop.index0 }}00ms"
-                  {%
-                  endif
-                  %}
-                >
-                  <h6>
-                    <i class="bi {{ section.icon }}"></i> {{ section.title }}
-                  </h6>
+            <i class="bi bi-arrow-left"></i> Back to Applications
+          </a>
+        </div>
+      </div>
+    </div>
+  
+    <div class="row g-4">
+      <!-- Resume Content Panel -->
+      <div class="col-lg-5">
+        <div
+          class="card border-0 shadow-sm h-100 slide-in"
+          style="animation-delay: 0.1s"
+        >
+          <div class="card-header bg-white py-3">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-file-earmark-text me-2 text-primary"></i>
+              <h5 class="mb-0">Resume Content</h5>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div
+              class="resume-content p-3"
+              style="max-height: 70vh; overflow-y: auto"
+            >
+              <!-- Structured resume format instead of plain text -->
+              <div id="structured-resume" class="p-3">
+                <!-- Parse and display the resume in a structured format using JavaScript -->
+                {% set sections = [ {'icon': 'bi-person-vcard', 'title': 'Personal
+                Information'}, {'icon': 'bi-briefcase', 'title': 'Work
+                Experience'}, {'icon': 'bi-mortarboard', 'title': 'Education'},
+                {'icon': 'bi-tools', 'title': 'Skills'}, {'icon': 'bi-award',
+                'title': 'Achievements'}, {'icon': 'bi-translate', 'title':
+                'Languages'}, {'icon': 'bi-braces', 'title': 'Projects'}, {'icon':
+                'bi-journal-text', 'title': 'Certifications'}, {'icon': 'bi-link',
+                'title': 'References'} ] %}
+  
+                <div class="placeholder-resume">
+                  <p class="fst-italic text-muted mb-3">
+                    Showing resume content in structured format:
+                  </p>
+  
+                  {% for section in sections %}
                   <div
-                    class="resume-section-content structured-section"
-                    data-section="{{ section.title.lower() }}"
+                    class="resume-section fade-in"
+                    {%
+                    if
+                    loop.index
+                    %}style="animation-delay: {{ loop.index0 }}00ms"
+                    {%
+                    endif
+                    %}
                   >
-                    <!-- This will be filled by JS if content is detected -->
-                    <div class="placeholder-content">...</div>
+                    <h6>
+                      <i class="bi {{ section.icon }}"></i> {{ section.title }}
+                    </h6>
+                    <div
+                      class="resume-section-content structured-section"
+                      data-section="{{ section.title.lower() }}"
+                    >
+                      <!-- This will be filled by JS if content is detected -->
+                      <div class="placeholder-content">...</div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+  
+                <!-- Hidden raw resume text for parsing and for users who prefer it -->
+                <div class="mt-4 border-top pt-3">
+                  <button
+                    class="btn btn-sm btn-outline-secondary"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#rawResumeContent"
+                  >
+                    <i class="bi bi-text-left"></i> Show Original Text
+                  </button>
+                  <div class="collapse mt-3" id="rawResumeContent">
+                    <pre
+                      class="bg-light p-3 rounded"
+                      style="
+                        white-space: pre-wrap;
+                        font-size: 0.9rem;
+                        border-left: 3px solid #3b71ca;
+                      "
+                    >
+  {{ resume.extracted_text }}</pre
+                    >
                   </div>
                 </div>
-                {% endfor %}
               </div>
-
-              <!-- Hidden raw resume text for parsing and for users who prefer it -->
-              <div class="mt-4 border-top pt-3">
-                <button
-                  class="btn btn-sm btn-outline-secondary"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#rawResumeContent"
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- AI Question Panel -->
+      <div class="col-lg-7">
+        <div
+          class="card border-0 shadow-sm mb-4 slide-in"
+          style="animation-delay: 0.2s"
+        >
+          <div class="card-header bg-white py-3">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-chat-left-dots me-2 text-primary"></i>
+              <h5 class="mb-0">Ask Resume Questions</h5>
+            </div>
+          </div>
+          <div class="card-body">
+            <form method="POST" id="questionForm">
+              <div class="form-group mb-3">
+                <label for="question" class="form-label fw-bold"
+                  >Your Question:</label
                 >
-                  <i class="bi bi-text-left"></i> Show Original Text
+                <textarea
+                  class="form-control form-control-lg"
+                  id="question"
+                  name="question"
+                  rows="3"
+                  placeholder="e.g., What are the candidate's top skills? How many years of experience do they have in web development?"
+                  required
+                ></textarea>
+              </div>
+  
+              <div class="d-flex gap-2 position-relative">
+                <button
+                  type="submit"
+                  class="btn btn-primary px-4 py-2 btn-hover-effect"
+                  id="askButton"
+                >
+                  <i class="bi bi-send me-2"></i> Ask Question
+                  <span
+                    class="spinner-border spinner-border-sm d-none"
+                    id="loadingSpinner"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
                 </button>
-                <div class="collapse mt-3" id="rawResumeContent">
-                  <pre
-                    class="bg-light p-3 rounded"
-                    style="
-                      white-space: pre-wrap;
-                      font-size: 0.9rem;
-                      border-left: 3px solid #3b71ca;
-                    "
+  
+                <div class="dropdown" style="position: relative; z-index: 2000;">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary dropdown-toggle btn-hover-effect"
+                    id="exampleQuestionsDropdown"
                   >
-{{ resume.extracted_text }}</pre
+                    <i class="bi bi-list-ul me-1"></i> Example Questions
+                  </button>
+                  <ul
+                    class="dropdown-menu example-questions"
+                    aria-labelledby="exampleQuestionsDropdown"
                   >
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        data-question="What are this candidate's key skills?"
+                        >What are this candidate's key skills?</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        data-question="How many years of relevant experience does this candidate have?"
+                        >How many years of relevant experience?</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        data-question="What is this candidate's educational background?"
+                        >What is their educational background?</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        data-question="Does this candidate have experience with any relevant tools or technologies?"
+                        >Experience with relevant tools?</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        data-question="What are this candidate's most significant achievements?"
+                        >Most significant achievements?</a
+                      >
+                    </li>
+                  </ul>
                 </div>
               </div>
-            </div>
+            </form>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- AI Question Panel -->
-    <div class="col-lg-7">
-      <div
-        class="card border-0 shadow-sm mb-4 slide-in"
-        style="animation-delay: 0.2s"
-      >
-        <div class="card-header bg-white py-3">
-          <div class="d-flex align-items-center">
-            <i class="bi bi-chat-left-dots me-2 text-primary"></i>
-            <h5 class="mb-0">Ask Resume Questions</h5>
-          </div>
-        </div>
-        <div class="card-body">
-          <form method="POST" id="questionForm">
-            <div class="form-group mb-3">
-              <label for="question" class="form-label fw-bold"
-                >Your Question:</label
-              >
-              <textarea
-                class="form-control form-control-lg"
-                id="question"
-                name="question"
-                rows="3"
-                placeholder="e.g., What are the candidate's top skills? How many years of experience do they have in web development?"
-                required
-              ></textarea>
+  
+        {% if answer %}
+        <div class="card border-0 shadow-sm answer-section">
+          <div class="card-header bg-white py-3">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-robot me-2 text-success"></i>
+              <h5 class="mb-0">AI Analysis</h5>
             </div>
-
-            <div class="d-flex gap-2 position-relative">
+          </div>
+          <div class="card-body">
+            <div class="answer-content p-3 bg-light rounded">
+              {{ answer | safe }}
+            </div>
+            <div class="d-flex justify-content-end mt-3">
               <button
-                type="submit"
-                class="btn btn-primary px-4 py-2 btn-hover-effect"
-                id="askButton"
+                class="btn btn-sm btn-outline-primary copy-answer btn-hover-effect"
+                type="button"
               >
-                <i class="bi bi-send me-2"></i> Ask Question
-                <span
-                  class="spinner-border spinner-border-sm d-none"
-                  id="loadingSpinner"
-                  role="status"
-                  aria-hidden="true"
-                ></span>
+                <i class="bi bi-clipboard"></i> Copy to Clipboard
               </button>
-
-              <div class="dropdown">
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary dropdown-toggle btn-hover-effect"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                  id="exampleQuestionsDropdown"
-                >
-                  <i class="bi bi-list-ul me-1"></i> Example Questions
-                </button>
-                <ul
-                  class="dropdown-menu example-questions"
-                  aria-labelledby="exampleQuestionsDropdown"
-                >
-                  <li>
-                    <a
-                      class="dropdown-item"
-                      href="#"
-                      data-question="What are this candidate's key skills?"
-                      >What are this candidate's key skills?</a
-                    >
-                  </li>
-                  <li>
-                    <a
-                      class="dropdown-item"
-                      href="#"
-                      data-question="How many years of relevant experience does this candidate have?"
-                      >How many years of relevant experience?</a
-                    >
-                  </li>
-                  <li>
-                    <a
-                      class="dropdown-item"
-                      href="#"
-                      data-question="What is this candidate's educational background?"
-                      >What is their educational background?</a
-                    >
-                  </li>
-                  <li>
-                    <a
-                      class="dropdown-item"
-                      href="#"
-                      data-question="Does this candidate have experience with any relevant tools or technologies?"
-                      >Experience with relevant tools?</a
-                    >
-                  </li>
-                  <li>
-                    <a
-                      class="dropdown-item"
-                      href="#"
-                      data-question="What are this candidate's most significant achievements?"
-                      >Most significant achievements?</a
-                    >
-                  </li>
-                </ul>
-              </div>
             </div>
-          </form>
+          </div>
         </div>
+        {% endif %}
       </div>
-
-      {% if answer %}
-      <div class="card border-0 shadow-sm answer-section">
-        <div class="card-header bg-white py-3">
-          <div class="d-flex align-items-center">
-            <i class="bi bi-robot me-2 text-success"></i>
-            <h5 class="mb-0">AI Analysis</h5>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="answer-content p-3 bg-light rounded">
-            {{ answer | safe }}
-          </div>
-          <div class="d-flex justify-content-end mt-3">
-            <button
-              class="btn btn-sm btn-outline-primary copy-answer btn-hover-effect"
-              type="button"
-            >
-              <i class="bi bi-clipboard"></i> Copy to Clipboard
-            </button>
-          </div>
-        </div>
-      </div>
-      {% endif %}
     </div>
   </div>
-</div>
-
-{% block extra_js %}
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    // Process resume text into structured format
-    const resumeText = `{{ resume.extracted_text|replace("\n", "\\n")|replace("'", "\\'")|replace("\"", "\\\"") }}`;
-    processResumeText(resumeText);
-
-    // Improved dropdown functionality
-    const dropdownToggle = document.querySelector(".dropdown-toggle");
-    const dropdownMenu = document.querySelector(".dropdown-menu");
-
-    // Fix dropdown positioning issues
-    if (dropdownToggle && dropdownMenu) {
-      // Ensure dropdown is shown correctly
-      dropdownToggle.addEventListener("click", function (e) {
-        e.stopPropagation();
-        dropdownMenu.classList.toggle("show");
-
-        // Position the dropdown properly
-        const rect = dropdownToggle.getBoundingClientRect();
-        dropdownMenu.style.top = rect.bottom + window.scrollY + "px";
-        dropdownMenu.style.left = rect.left + window.scrollX + "px";
-      });
-
-      // Close dropdown when clicking outside
-      document.addEventListener("click", function (e) {
-        if (
-          !dropdownToggle.contains(e.target) &&
-          !dropdownMenu.contains(e.target)
-        ) {
-          dropdownMenu.classList.remove("show");
-        }
-      });
-    }
-
-    // Example questions functionality with animation
-    document
-      .querySelectorAll(".example-questions .dropdown-item")
-      .forEach((item) => {
-        item.addEventListener("click", function (e) {
+  
+  {% block extra_js %}
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Process resume text into structured format
+      const resumeText = `{{ resume.extracted_text|replace("\n", "\\n")|replace("'", "\\'")|replace("\"", "\\\"") }}`;
+      processResumeText(resumeText);
+  
+      // FIXED DROPDOWN IMPLEMENTATION
+      const dropdownToggle = document.getElementById("exampleQuestionsDropdown");
+      const dropdownMenu = document.querySelector(".dropdown-menu");
+  
+      // Toggle dropdown on button click
+      if (dropdownToggle && dropdownMenu) {
+        dropdownToggle.addEventListener("click", function (e) {
           e.preventDefault();
-          const question = this.getAttribute("data-question");
-          const questionField = document.getElementById("question");
-
-          // Set the question text
-          questionField.value = question;
-          questionField.style.backgroundColor = "#f0f7ff";
-
-          // Hide dropdown after selection
-          dropdownMenu.classList.remove("show");
-
-          // Focus the textarea
-          questionField.focus();
-
-          // Animation effect
-          setTimeout(() => {
-            questionField.style.backgroundColor = "";
-          }, 600);
+          e.stopPropagation();
+          
+          // Close other dropdowns first
+          document.querySelectorAll('.dropdown-menu.show').forEach(function(openMenu) {
+            if (openMenu !== dropdownMenu) {
+              openMenu.classList.remove('show');
+            }
+          });
+          
+          // Toggle this dropdown
+          dropdownMenu.classList.toggle("show");
+          
+          // Ensure the dropdown appears on top
+          dropdownMenu.style.zIndex = "3000";
         });
-      });
-
-    // Copy to clipboard functionality with animation
-    const copyButton = document.querySelector(".copy-answer");
-    if (copyButton) {
-      copyButton.addEventListener("click", function () {
-        const answerText = document.querySelector(".answer-content").innerText;
-        navigator.clipboard.writeText(answerText).then(() => {
-          const originalText = this.innerHTML;
-          this.innerHTML = '<i class="bi bi-check"></i> Copied!';
-          this.classList.add("btn-success");
-          this.classList.remove("btn-outline-primary");
-          setTimeout(() => {
-            this.innerHTML = originalText;
-            this.classList.remove("btn-success");
-            this.classList.add("btn-outline-primary");
-          }, 2000);
-        });
-      });
-    }
-
-    // Add loading animation to form submission
-    const questionForm = document.getElementById("questionForm");
-    const loadingSpinner = document.getElementById("loadingSpinner");
-    const askButton = document.getElementById("askButton");
-
-    if (questionForm) {
-      questionForm.addEventListener("submit", function () {
-        loadingSpinner.classList.remove("d-none");
-        askButton.setAttribute("disabled", "true");
-        askButton.innerHTML =
-          '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Processing...';
-      });
-    }
-
-    // Function to process resume text into sections
-    function processResumeText(text) {
-      const sections = {
-        "personal information": [
-          "name",
-          "email",
-          "phone",
-          "address",
-          "linkedin",
-          "portfolio",
-          "github",
-        ],
-        "work experience": ["experience", "employment", "work history", "job"],
-        education: ["education", "university", "college", "degree", "academic"],
-        skills: [
-          "skills",
-          "technologies",
-          "programming",
-          "languages",
-          "frameworks",
-        ],
-        achievements: ["achievements", "awards", "honors", "accomplishments"],
-        languages: ["language proficiency", "spoken languages"],
-        projects: ["projects", "portfolio", "github"],
-        certifications: ["certifications", "certificate", "licensed"],
-        references: ["references", "recommendation"],
-      };
-
-      const lines = text.split("\\n");
-      const sectionContent = {};
-
-      // Initialize all sections
-      Object.keys(sections).forEach((section) => {
-        sectionContent[section] = [];
-      });
-
-      // Simple heuristic to categorize text into sections
-      let currentSection = "personal information";
-
-      lines.forEach((line) => {
-        line = line.trim();
-        if (!line) return;
-
-        // Check if this line is a section header
-        let foundSection = false;
-        Object.entries(sections).forEach(([section, keywords]) => {
-          const lowerLine = line.toLowerCase();
-          if (
-            keywords.some((keyword) => lowerLine.includes(keyword)) &&
-            line.length < 50 && // Section headers are typically short
-            (lowerLine === line.toUpperCase() || // Often in all caps
-              /^[A-Z]/.test(line) || // Starts with capital letter
-              line.endsWith(":") || // Ends with colon
-              line.startsWith("#"))
-          ) {
-            // Markdown style
-            currentSection = section;
-            foundSection = true;
-            return;
+  
+        // Close dropdown when clicking outside
+        document.addEventListener("click", function (e) {
+          if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+            dropdownMenu.classList.remove("show");
           }
         });
-
-        if (!foundSection) {
-          sectionContent[currentSection].push(line);
-        }
-      });
-
-      // Update the DOM with parsed content
-      Object.entries(sectionContent).forEach(([section, content]) => {
-        const sectionElement = document.querySelector(
-          `.structured-section[data-section="${section}"]`
-        );
-        if (sectionElement && content.length > 0) {
-          sectionElement.innerHTML = content
-            .map((line) => `<p>${highlightKeywords(line)}</p>`)
-            .join("");
-        } else if (sectionElement) {
-          // If no content was found for this section
-          sectionElement.parentElement.style.display = "none";
-        }
-      });
-
-      // Hide the placeholder content
-      document.querySelectorAll(".placeholder-content").forEach((el) => {
-        el.style.display = "none";
-      });
-    }
-
-    // Function to highlight important keywords in the resume
-    function highlightKeywords(text) {
-      const keywordsToHighlight = [
-        "experience",
-        "years",
-        "expert",
-        "proficient",
-        "skilled",
-        "master",
-        "bachelor",
-        "master",
-        "phd",
-        "degree",
-        "certification",
-        "javascript",
-        "python",
-        "java",
-        "c++",
-        "react",
-        "node",
-        "angular",
-        "vue",
-        "aws",
-        "azure",
-        "google cloud",
-        "docker",
-        "kubernetes",
-        "ci/cd",
-        "leadership",
-        "manager",
-        "director",
-        "lead",
-        "senior",
-        "junior",
-        "intern",
-      ];
-
-      let highlightedText = text;
-      keywordsToHighlight.forEach((keyword) => {
-        const regex = new RegExp(`\\b${keyword}\\b`, "gi");
-        highlightedText = highlightedText.replace(
-          regex,
-          (match) => `<span class="highlight-text">${match}</span>`
-        );
-      });
-
-      return highlightedText;
-    }
-  });
-</script>
-{% endblock %} {% endblock %}
+  
+        // Prevent dropdown from closing when clicking inside it
+        dropdownMenu.addEventListener("click", function (e) {
+          e.stopPropagation();
+        });
+      }
+  
+      // Example questions functionality with animation
+      document
+        .querySelectorAll(".example-questions .dropdown-item")
+        .forEach((item) => {
+          item.addEventListener("click", function (e) {
+            e.preventDefault();
+            const question = this.getAttribute("data-question");
+            const questionField = document.getElementById("question");
+  
+            // Set the question text
+            questionField.value = question;
+            questionField.style.backgroundColor = "#f0f7ff";
+  
+            // Hide dropdown after selection
+            dropdownMenu.classList.remove("show");
+  
+            // Focus the textarea
+            questionField.focus();
+  
+            // Animation effect
+            setTimeout(() => {
+              questionField.style.backgroundColor = "";
+            }, 600);
+          });
+        });
+  
+      // Copy to clipboard functionality with animation
+      const copyButton = document.querySelector(".copy-answer");
+      if (copyButton) {
+        copyButton.addEventListener("click", function () {
+          const answerText = document.querySelector(".answer-content").innerText;
+          navigator.clipboard.writeText(answerText).then(() => {
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="bi bi-check"></i> Copied!';
+            this.classList.add("btn-success");
+            this.classList.remove("btn-outline-primary");
+            setTimeout(() => {
+              this.innerHTML = originalText;
+              this.classList.remove("btn-success");
+              this.classList.add("btn-outline-primary");
+            }, 2000);
+          });
+        });
+      }
+  
+      // Add loading animation to form submission
+      const questionForm = document.getElementById("questionForm");
+      const loadingSpinner = document.getElementById("loadingSpinner");
+      const askButton = document.getElementById("askButton");
+  
+      if (questionForm) {
+        questionForm.addEventListener("submit", function () {
+          loadingSpinner.classList.remove("d-none");
+          askButton.setAttribute("disabled", "true");
+          askButton.innerHTML =
+            '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Processing...';
+        });
+      }
+  
+      // Function to process resume text into sections
+      function processResumeText(text) {
+        const sections = {
+          "personal information": [
+            "name",
+            "email",
+            "phone",
+            "address",
+            "linkedin",
+            "portfolio",
+            "github",
+          ],
+          "work experience": ["experience", "employment", "work history", "job"],
+          education: ["education", "university", "college", "degree", "academic"],
+          skills: [
+            "skills",
+            "technologies",
+            "programming",
+            "languages",
+            "frameworks",
+          ],
+          achievements: ["achievements", "awards", "honors", "accomplishments"],
+          languages: ["language proficiency", "spoken languages"],
+          projects: ["projects", "portfolio", "github"],
+          certifications: ["certifications", "certificate", "licensed"],
+          references: ["references", "recommendation"],
+        };
+  
+        const lines = text.split("\\n");
+        const sectionContent = {};
+  
+        // Initialize all sections
+        Object.keys(sections).forEach((section) => {
+          sectionContent[section] = [];
+        });
+  
+        // Simple heuristic to categorize text into sections
+        let currentSection = "personal information";
+  
+        lines.forEach((line) => {
+          line = line.trim();
+          if (!line) return;
+  
+          // Check if this line is a section header
+          let foundSection = false;
+          Object.entries(sections).forEach(([section, keywords]) => {
+            const lowerLine = line.toLowerCase();
+            if (
+              keywords.some((keyword) => lowerLine.includes(keyword)) &&
+              line.length < 50 && // Section headers are typically short
+              (lowerLine === line.toUpperCase() || // Often in all caps
+                /^[A-Z]/.test(line) || // Starts with capital letter
+                line.endsWith(":") || // Ends with colon
+                line.startsWith("#"))
+            ) {
+              // Markdown style
+              currentSection = section;
+              foundSection = true;
+              return;
+            }
+          });
+  
+          if (!foundSection) {
+            sectionContent[currentSection].push(line);
+          }
+        });
+  
+        // Update the DOM with parsed content
+        Object.entries(sectionContent).forEach(([section, content]) => {
+          const sectionElement = document.querySelector(
+            `.structured-section[data-section="${section}"]`
+          );
+          if (sectionElement && content.length > 0) {
+            sectionElement.innerHTML = content
+              .map((line) => `<p>${highlightKeywords(line)}</p>`)
+              .join("");
+          } else if (sectionElement) {
+            // If no content was found for this section
+            sectionElement.parentElement.style.display = "none";
+          }
+        });
+  
+        // Hide the placeholder content
+        document.querySelectorAll(".placeholder-content").forEach((el) => {
+          el.style.display = "none";
+        });
+      }
+  
+      // Function to highlight important keywords in the resume
+      function highlightKeywords(text) {
+        const keywordsToHighlight = [
+          "experience",
+          "years",
+          "expert",
+          "proficient",
+          "skilled",
+          "master",
+          "bachelor",
+          "master",
+          "phd",
+          "degree",
+          "certification",
+          "javascript",
+          "python",
+          "java",
+          "c++",
+          "react",
+          "node",
+          "angular",
+          "vue",
+          "aws",
+          "azure",
+          "google cloud",
+          "docker",
+          "kubernetes",
+          "ci/cd",
+          "leadership",
+          "manager",
+          "director",
+          "lead",
+          "senior",
+          "junior",
+          "intern",
+        ];
+  
+        let highlightedText = text;
+        keywordsToHighlight.forEach((keyword) => {
+          const regex = new RegExp(`\\b${keyword}\\b`, "gi");
+          highlightedText = highlightedText.replace(
+            regex,
+            (match) => `<span class="highlight-text">${match}</span>`
+          );
+        });
+  
+        return highlightedText;
+      }
+    });
+  </script>
+  {% endblock %} {% endblock %}

@@ -1,39 +1,41 @@
-# Environment variables
-.env
-.flaskenv
+# Environment variables  
+.env  
+.flaskenv  
 
-# Virtual environment
-myenv/
-venv/
-env/
-ENV/
+# Virtual environments  
+venv/  
+env/  
+ENV/  
+myenv/  
 
-# Database
-*.db
-*.sqlite3
+# Database files  
+*.db  
+*.sqlite3  
 
-# Uploaded files
-uploads/
+# Uploaded files  
+uploads/  
 
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+# Byte-compiled / optimized / DLL files  
+__pycache__/  
+*.py[cod]  
+*$py.class  
 
-# Distribution / packaging
-dist/
-build/
-*.egg-info/
+# Distribution / packaging  
+dist/  
+build/  
+*.egg-info/  
+*.egg  
 
-# Logs
-*.log
+# Logs  
+*.log  
 
-# IDE specific files
-.idea/
-.vscode/
-*.swp
-*.swo
+# IDE-specific files  
+.idea/  
+.vscode/  
+*.swp  
+*.swo  
 
-# OS specific files
-.DS_Store
-.vercel
+# OS-specific files  
+.DS_Store  
+.vercel  
+Thumbs.db  
