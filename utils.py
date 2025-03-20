@@ -449,8 +449,8 @@ def ask_resume_question(resume_text, question, api_key):
             return "Error: Invalid resume text provided"
         if not question or not isinstance(question, str):
             return "Error: Invalid question provided"
-        if not api_key or not api_key.startswith('AIza'):
-            return "Error: Invalid API key format"
+        if not api_key:
+            return "Error: Gemini API key not configured. Please check your .env file."
 
         print("Processing resume for QA...")
         # Process the resume for QA

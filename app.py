@@ -1,9 +1,13 @@
+from dotenv import load_dotenv
+
+# Load environment variables from .env file first
+load_dotenv()
+
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_login import LoginManager, current_user, logout_user
 from flask_migrate import Migrate
 from werkzeug.utils import secure_filename
-from dotenv import load_dotenv
 from models import db, User
 from auth import auth
 from candidate import candidate
@@ -15,15 +19,11 @@ from utils import (
 from config import Config
 import jinja2
 
-# Load environment variables from .flaskenv file
-load_dotenv()
-
 app = Flask(__name__)
 app.secret_key = "resume_ranking_secret_key"
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 app.config.from_object(Config)
-app.config['GEMINI_API_KEY'] = os.environ.get('GEMINI_API_KEY')
 
 # Initialize extensions
 db.init_app(app)

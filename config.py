@@ -9,11 +9,8 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'resume_ranking_secret_key'
     
     # Database configuration
-    # SQLite for development, use PostgreSQL or MySQL for production
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///resume_platform.db'
-    # Fix for Heroku PostgreSQL URLs if needed
-    if SQLALCHEMY_DATABASE_URI and SQLALCHEMY_DATABASE_URI.startswith("postgres://"):
-        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace("postgres://", "postgresql://", 1)
+    # Using SQLite
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///resume_platform.db'
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
