@@ -17,3 +17,4 @@ langchain-google-genai==0.0.11
 chromadb==0.4.24
 pdfplumber==0.10.4 
 psycopg2-binary==2.9.9 
+en-core-web-sm==3.7.1
